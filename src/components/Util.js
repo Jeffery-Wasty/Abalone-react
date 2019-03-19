@@ -157,8 +157,7 @@ export const moveMarbles = (selectedMarbles, direction, boardArray) => {
         const moves = 10;
         const tempTable = destTable;        
         let counter = 1;
-
-        console.log(selectedMarbles);
+        let changeArray = [];
 
         let clock = setInterval(() => {
             selectedMarbles.forEach(({element, location})=> {
@@ -168,11 +167,12 @@ export const moveMarbles = (selectedMarbles, direction, boardArray) => {
                 const distanceY = (start.y - end.y)/moves;
                 element.setAttribute('cx', start.x - counter * distanceX);
                 element.setAttribute('cy', start.y - counter * distanceY);
+                changeArray.push({from: location, to: tempTable[location][direction]})
             })
             
             if(counter >= moves){
                 clearInterval(clock);
-                resolve("Complete");
+                resolve(changeArray);
             } else {
                 counter++;
             }

@@ -49,22 +49,28 @@ export default class GameBoard extends Component {
             const oldLocation = this.state.selectedHex[0];
             const newLocation = e.target.getAttribute('location');            
             const moveDirection = getMoveDirection(oldLocation, newLocation);
-            const selectedMarbles = getSelectedElements(this.state.selectedHex);
+            const selectedMarbles = getSelectedElements(this.state.selectedHex);            
 
             this.setState({ selectedHex: [] });
-            await moveMarbles(selectedMarbles, moveDirection, this.state.boardArray);
-            //this.updateBoardState(oldLocation, newLocation);
+            const changeArray = await moveMarbles(selectedMarbles, moveDirection, this.state.boardArray);
+            console.log(changeArray);
+            
 
         }
     }
 
-    updateBoardState = (oldLocation, newLocation) => {
+    updateBoardState = (changeArray) => {
         let boardState = this.state.curState.length ? this.state.curState : getInitialState(this.state.stateOption);
-        boardState[newLocation] = boardState[oldLocation];
-        boardState[oldLocation] = 0;
-        this.setState({
-            curState: boardState
+        changeArray.forEach(c => {
+            const oldLocation = c.from;
+            const newLocation = c.To;
+            boardState[newLocation] = boardState[oldLocation];
+            boardState[oldLocation] = 0;
+            this.setState({
+                curState: boardState
+            })
         })
+        
     }
 
     locationSelected = (location) => {
