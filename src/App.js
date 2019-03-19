@@ -8,9 +8,16 @@ class App extends Component {
     return (
       <div className="App">    
       <Row>
-        <Col xs={2} sm={4} md={6} lg={8} xl={10}><Button type="primary">Primary</Button></Col>
-        <Col xs={20} sm={16} md={12} lg={8} xl={4}><Button type="primary">Primary</Button></Col>
-        <Col xs={2} sm={4} md={6} lg={8} xl={10}><Button type="primary">Primary</Button></Col>
+        <Col span={14}>
+        <div style={{margin: '100px 0 0 200px'}}>            
+          <GameBoard />
+        </div>
+        </Col>
+        <Col span={10}>
+          <div style={{margin: '100px 200px 0 0', minHeight: 450, border: "1px solid"}}>
+
+          </div>
+        </Col>>
       </Row>   
       </div>
     );

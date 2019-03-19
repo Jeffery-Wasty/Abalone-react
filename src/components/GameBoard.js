@@ -154,7 +154,7 @@ export default class GameBoard extends Component {
 
         return (
             <div>
-                <svg id="test-polygon" viewBox="0 0 800 600">
+                <svg id="test-polygon" viewBox="0 0 400 350">
                     <defs>
                         <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5"
                             markerWidth="3" markerHeight="3"
