@@ -152,27 +152,26 @@ export const moveMarble = (e, start, end) => {
     
 }
 
-export const moveMarbles = (selectedMarbles, direction, boardArray) => {
+export const moveMarbles = (changeInfoArray) => {
     return new Promise((resolve) => {
+        if(!changeInfoArray.length){
+            return;
+        }
         const moves = 10;
-        const tempTable = destTable;        
+        const distanceX = (changeInfoArray[0].start.x - changeInfoArray[0].end.x)/moves;    
+        const distanceY = (changeInfoArray[0].start.y - changeInfoArray[0].end.y)/moves;
+
         let counter = 1;
-        let changeArray = [];
 
         let clock = setInterval(() => {
-            selectedMarbles.forEach(({element, location})=> {
-                const start = boardArray[location];
-                const end = boardArray[tempTable[location][direction]];
-                const distanceX = (start.x - end.x)/moves;    
-                const distanceY = (start.y - end.y)/moves;
+            changeInfoArray.forEach(({element, start})=> {
                 element.setAttribute('cx', start.x - counter * distanceX);
                 element.setAttribute('cy', start.y - counter * distanceY);
-                changeArray.push({from: location, to: tempTable[location][direction]})
             })
             
             if(counter >= moves){
                 clearInterval(clock);
-                resolve(changeArray);
+                resolve("completed");
             } else {
                 counter++;
             }

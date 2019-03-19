@@ -1,24 +1,28 @@
 import React, { Component } from 'react';
 import { getInitialState } from './InitState';
-import { isLegalGroup, generateBoardCoordArray, getHexCornerCoordinate, moveMarbles, getSelectedElements, getMoveDirection } from './Util';
+import {
+    isLegalGroup, generateBoardCoordArray, getHexCornerCoordinate,
+    moveMarbles, getSelectedElements, getMoveDirection
+} from './Util';
+import { destTable } from './DestTable';
 
 export default class GameBoard extends Component {
 
     constructor(props) {
         super(props);
         this.state = {
-            hexSize: 15,
-            start_point: { x: 90, y: 50 },
+            hexSize: 20,
+            start_point: { x: 100, y: 50 },
             selectedHex: [],
             supportLine: "",
             supportLineVisible: false,
             curState: [],
-            stateOption: 1,
+            stateOption: 1
         }
 
     }
 
-    componentWillMount() {             
+    componentWillMount() {
         this.setState({
             boardArray: generateBoardCoordArray(this.state.start_point, this.state.hexSize)
         })
@@ -30,9 +34,9 @@ export default class GameBoard extends Component {
         if (selected) {
             this.setState({ selectedHex: [] });
         } else {
-            if(this.state.supportLineVisible) {
+            if (this.state.supportLineVisible) {
                 //TODO: only move when there is supportline
-            } else {                
+            } else {
                 if (this.state.selectedHex.length >= 3) {
                     this.setState({ selectedHex: [e.target.getAttribute('location')] });
                 } else {
@@ -44,33 +48,63 @@ export default class GameBoard extends Component {
     }
 
     clickHex = async (e) => {
-        if(this.state.supportLineVisible) {
-            
+        if (this.state.supportLineVisible) {
+            //calculate direction
             const oldLocation = this.state.selectedHex[0];
-            const newLocation = e.target.getAttribute('location');            
+            const newLocation = e.target.getAttribute('location');
             const moveDirection = getMoveDirection(oldLocation, newLocation);
-            const selectedMarbles = getSelectedElements(this.state.selectedHex);            
+
+            if (moveDirection === -1) {
+                return;
+            }
+
+            //save all moving info of selected marbles to an array
+            const changeInfoArray = getSelectedElements(this.state.selectedHex);
+
+            changeInfoArray.forEach((marble, index) => {
+                const destLocation = destTable[marble.location][moveDirection];                
+                changeInfoArray[index].originLocation = marble.location;
+                changeInfoArray[index].destLocation = destLocation;
+                changeInfoArray[index].start = this.state.boardArray[marble.location];
+                changeInfoArray[index].end = this.state.boardArray[destLocation];
+            })
 
             this.setState({ selectedHex: [] });
-            const changeArray = await moveMarbles(selectedMarbles, moveDirection, this.state.boardArray);
-            console.log(changeArray);
-            
+
+            //move all selected marbles
+            await moveMarbles(changeInfoArray);  
+
+            this.updateBoardState(changeInfoArray);
 
         }
     }
 
-    updateBoardState = (changeArray) => {
+    updateBoardState = (changeInfoArray) => {
         let boardState = this.state.curState.length ? this.state.curState : getInitialState(this.state.stateOption);
-        changeArray.forEach(c => {
-            const oldLocation = c.from;
-            const newLocation = c.To;
-            boardState[newLocation] = boardState[oldLocation];
-            boardState[oldLocation] = 0;
-            this.setState({
-                curState: boardState
+        let oldState = boardState;
+        changeInfoArray.forEach(c => {
+            const oldLocation = c.originLocation;
+            const newLocation = c.destLocation;
+            boardState[newLocation] = oldState[oldLocation];
+
+            let override = changeInfoArray.find(c => {
+                return c.destLocation === parseInt(oldLocation)
             })
+
+            if(!override){
+                boardState[oldLocation] = 0;
+            }        
         })
-        
+
+        changeInfoArray.forEach(({element, start})=> {
+            element.setAttribute('cx', start.x);
+            element.setAttribute('cy', start.y);
+        })
+
+        this.setState({
+            curState: boardState
+        })
+
     }
 
     locationSelected = (location) => {
@@ -92,7 +126,7 @@ export default class GameBoard extends Component {
         const end = this.state.boardArray[e.target.getAttribute('location')];
 
         this.showSupportLine(start, end, true);
-        
+
     }
 
     mouseOutHex = (e) => {
@@ -115,11 +149,16 @@ export default class GameBoard extends Component {
         })
     }
 
+    testBtn = () => {
+        console.log(document.querySelectorAll("circle"));
+    }
+
     render() {
         const boardState = this.state.curState.length ? this.state.curState : getInitialState(this.state.stateOption);
 
         return (
             <div style={{ marginTop: 100, marginLeft: 300 }}>
+                <button onClick={this.testBtn}>Test</button>
                 <svg id="test-polygon" viewBox="0 0 800 600">
                     <defs>
                         <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5"
@@ -129,8 +168,8 @@ export default class GameBoard extends Component {
                         </marker>
                     </defs>
 
-                    <rect x="0" y="0" width="280" height="280" stroke="#c2c2c2" fill="#f5f5f5"/>
-                    
+                    <rect x="0" y="0" width="350" height="350" stroke="#c2c2c2" fill="#f5f5f5" />
+
                     {this.state.boardArray.map((center, key) =>
                         <polygon
                             key={key}
@@ -142,22 +181,22 @@ export default class GameBoard extends Component {
                             stroke="#000"
                             onMouseOver={this.mouseOverHex}
                             onMouseOut={this.mouseOutHex}
-                            onClick = {this.clickHex}
+                            onClick={this.clickHex}
                         />
                     )}
 
-                    {this.state.boardArray.map((center, key) =>
+                    {this.state.boardArray.map((center, key) => 
                         boardState[key] !== 0 ?
-                            <circle
-                                key={key}
-                                onClick={this.clickMarble}
-                                location={key}
-                                cx={center.x}
-                                cy={center.y}
-                                r="11"
-                                fill={(boardState[key] === 1) ? '#eeeeee' : '#263238'}
-                            />
-                        : null
+                        <circle
+                            key={key}
+                            onClick={this.clickMarble}
+                            location={key}
+                            cx={center.x}
+                            cy={center.y}
+                            r="15"
+                            fill={(boardState[key] === 1) ? '#eeeeee' : '#263238'}
+                        />
+                        : null                        
                     )}
 
                     <polyline
