@@ -12,7 +12,7 @@ export default class GameBoard extends Component {
         super(props);
         this.state = {
             hexSize: 20,
-            start_point: { x: 100, y: 50 },
+            start_point: { x: 105, y: 40 },
             selectedHex: [],
             supportLine: "",
             supportLineVisible: false,
@@ -163,7 +163,7 @@ export default class GameBoard extends Component {
                         </marker>
                     </defs>
 
-                    <rect x="0" y="0" width="350" height="350" stroke="#c2c2c2" fill="#f5f5f5" />
+                    <rect x="0" y="0" width="350" height="320" stroke="#c2c2c2" fill="#f5f5f5" />
 
                     {this.state.boardArray.map((center, key) =>
                         <polygon
