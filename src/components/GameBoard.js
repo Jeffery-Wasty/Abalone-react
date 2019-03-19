@@ -62,7 +62,7 @@ export default class GameBoard extends Component {
             const changeInfoArray = getSelectedElements(this.state.selectedHex);
 
             changeInfoArray.forEach((marble, index) => {
-                const destLocation = destTable[marble.location][moveDirection];                
+                const destLocation = destTable[marble.location][moveDirection];
                 changeInfoArray[index].originLocation = marble.location;
                 changeInfoArray[index].destLocation = destLocation;
                 changeInfoArray[index].start = this.state.boardArray[marble.location];
@@ -72,7 +72,7 @@ export default class GameBoard extends Component {
             this.setState({ selectedHex: [] });
 
             //move all selected marbles
-            await moveMarbles(changeInfoArray);  
+            await moveMarbles(changeInfoArray);
 
             this.updateBoardState(changeInfoArray);
 
@@ -91,12 +91,12 @@ export default class GameBoard extends Component {
                 return c.destLocation === parseInt(oldLocation)
             })
 
-            if(!override){
+            if (!override) {
                 boardState[oldLocation] = 0;
-            }        
+            }
         })
 
-        changeInfoArray.forEach(({element, start})=> {
+        changeInfoArray.forEach(({ element, start }) => {
             element.setAttribute('cx', start.x);
             element.setAttribute('cy', start.y);
         })
@@ -163,7 +163,29 @@ export default class GameBoard extends Component {
                         </marker>
                     </defs>
 
-                    <rect x="0" y="0" width="350" height="320" stroke="#c2c2c2" fill="#f5f5f5" />
+                    <defs>
+                        <pattern id="img1" patternUnits="userSpaceOnUse" width="100%" height="650">
+                            <image xlinkHref="https://media.istockphoto.com/photos/light-wood-texture-background-surface-with-old-natural-pattern-or-old-picture-id803334630" x="-30" y="-30"
+                                width="400" height="400" />
+                        </pattern>
+
+                    </defs>
+
+                    <defs>
+                        <radialGradient id="rgradwhite" cx="50%" cy="50%" r="75%" >
+                            <stop offset="0%" style={{stopColor:"rgb(255,255,255)", stopOpacity:"1" }}/>
+                            <stop offset="50%" style={{stopColor:"rgb(255,255,255)", stopOpacity:"1" }}/>
+                            <stop offset="100%" style={{stopColor:"rgb(0,0,0)", stopOpacity:"1" }} />
+                        </radialGradient>
+
+                        <radialGradient id="rgradblack" cx="50%" cy="50%" r="75%" > 
+                            <stop offset="0%" style={{stopColor:"rgb(0,0,0)", stopOpacity:"1" }} />
+                            <stop offset="55%" style={{stopColor:"rgb(0,0,0)", stopOpacity:"1" }} />
+                            <stop offset="100%" style={{stopColor:"rgb(255,255,255)", stopOpacity:"1" }} />
+                        </radialGradient> 
+                    </defs>
+
+                    <rect x="0" y="0" width="350" height="320" stroke="#c2c2c2" fill="url(#img1)" />
 
                     {this.state.boardArray.map((center, key) =>
                         <polygon
@@ -180,18 +202,18 @@ export default class GameBoard extends Component {
                         />
                     )}
 
-                    {this.state.boardArray.map((center, key) => 
+                    {this.state.boardArray.map((center, key) =>
                         boardState[key] !== 0 ?
-                        <circle
-                            key={key}
-                            onClick={this.clickMarble}
-                            location={key}
-                            cx={center.x}
-                            cy={center.y}
-                            r="15"
-                            fill={(boardState[key] === 1) ? '#eeeeee' : '#263238'}
-                        />
-                        : null                        
+                            <circle
+                                key={key}
+                                onClick={this.clickMarble}
+                                location={key}
+                                cx={center.x}
+                                cy={center.y}
+                                r="15"
+                                fill={(boardState[key] === 1) ? "url(#rgradwhite)" : "url(#rgradblack)"}
+                            />
+                            : null
                     )}
 
                     <polyline
@@ -204,7 +226,7 @@ export default class GameBoard extends Component {
                     />
                 </svg>
 
-                
+
             </div>
         )
     }

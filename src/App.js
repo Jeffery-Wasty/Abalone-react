@@ -149,7 +149,7 @@ class App extends Component {
             </div>
           </Col>
           <Col span={9}>
-            <div style={{ margin: '0 200px 0 0', minHeight: 620, border: "1px solid #90caf9", backgroundColor: "#bbdefb" }}>
+            <div style={{ margin: '0 200px 0 0', minHeight: 620, border: "1px solid #eeeeee", backgroundColor: "#eeeeee"}}>
                 <div style={{margin: 20}}>
                   <h3> - White Player</h3>
                   <h4>Game Score: 3</h4>                
