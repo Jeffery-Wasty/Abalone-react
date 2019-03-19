@@ -149,16 +149,11 @@ export default class GameBoard extends Component {
         })
     }
 
-    testBtn = () => {
-        console.log(document.querySelectorAll("circle"));
-    }
-
     render() {
         const boardState = this.state.curState.length ? this.state.curState : getInitialState(this.state.stateOption);
 
         return (
-            <div style={{ marginTop: 100, marginLeft: 300 }}>
-                <button onClick={this.testBtn}>Test</button>
+            <div>
                 <svg id="test-polygon" viewBox="0 0 800 600">
                     <defs>
                         <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5"
@@ -208,6 +203,8 @@ export default class GameBoard extends Component {
                         markerEnd="url(#arrow)"
                     />
                 </svg>
+
+                
             </div>
         )
     }
