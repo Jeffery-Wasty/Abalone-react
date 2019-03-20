@@ -5,6 +5,7 @@ import {
     moveMarbles, getSelectedElements, getMoveDirection
 } from './Util';
 import { destTable } from './DestTable';
+import AbaloneClient from '../utils/AbaloneClient';
 
 export default class GameBoard extends Component {
 
@@ -26,6 +27,17 @@ export default class GameBoard extends Component {
         this.setState({
             boardArray: generateBoardCoordArray(this.state.start_point, this.state.hexSize)
         })
+    }
+
+    componentDidMount = () => {
+        this.listenerId = AbaloneClient.addHandler('game-state', (res) => {
+            const state = JSON.parse(res.state);
+            this.setState({ curState: state });
+        });
+    }
+
+    componentWillUnmount = () => {
+        AbaloneClient.removeHandler('game-state', this.listenerId);
     }
 
     clickMarble = (e) => {
@@ -173,16 +185,16 @@ export default class GameBoard extends Component {
 
                     <defs>
                         <radialGradient id="rgradwhite" cx="50%" cy="50%" r="75%" >
-                            <stop offset="0%" style={{stopColor:"rgb(255,255,255)", stopOpacity:"1" }}/>
-                            <stop offset="50%" style={{stopColor:"rgb(255,255,255)", stopOpacity:"1" }}/>
-                            <stop offset="100%" style={{stopColor:"rgb(0,0,0)", stopOpacity:"1" }} />
+                            <stop offset="0%" style={{ stopColor: "rgb(255,255,255)", stopOpacity: "1" }} />
+                            <stop offset="50%" style={{ stopColor: "rgb(255,255,255)", stopOpacity: "1" }} />
+                            <stop offset="100%" style={{ stopColor: "rgb(0,0,0)", stopOpacity: "1" }} />
                         </radialGradient>
 
-                        <radialGradient id="rgradblack" cx="50%" cy="50%" r="75%" > 
-                            <stop offset="0%" style={{stopColor:"rgb(0,0,0)", stopOpacity:"1" }} />
-                            <stop offset="55%" style={{stopColor:"rgb(0,0,0)", stopOpacity:"1" }} />
-                            <stop offset="100%" style={{stopColor:"rgb(255,255,255)", stopOpacity:"1" }} />
-                        </radialGradient> 
+                        <radialGradient id="rgradblack" cx="50%" cy="50%" r="75%" >
+                            <stop offset="0%" style={{ stopColor: "rgb(0,0,0)", stopOpacity: "1" }} />
+                            <stop offset="55%" style={{ stopColor: "rgb(0,0,0)", stopOpacity: "1" }} />
+                            <stop offset="100%" style={{ stopColor: "rgb(255,255,255)", stopOpacity: "1" }} />
+                        </radialGradient>
                     </defs>
 
                     <rect x="0" y="0" width="350" height="320" stroke="#c2c2c2" fill="url(#img1)" />
