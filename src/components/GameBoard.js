@@ -192,7 +192,7 @@ export default class GameBoard extends Component {
 
                         <radialGradient id="rgradblack" cx="50%" cy="50%" r="75%" >
                             <stop offset="0%" style={{ stopColor: "rgb(0,0,0)", stopOpacity: "1" }} />
-                            <stop offset="55%" style={{ stopColor: "rgb(0,0,0)", stopOpacity: "1" }} />
+                            <stop offset="50%" style={{ stopColor: "rgb(0,0,0)", stopOpacity: "1" }} />
                             <stop offset="100%" style={{ stopColor: "rgb(255,255,255)", stopOpacity: "1" }} />
                         </radialGradient>
                     </defs>
