@@ -24,7 +24,6 @@ class AbaloneClient {
             const { endpoint, response } = this.preprocessResponse(data.toString());
             const handlers = this.responseHandlers[endpoint];
             if (handlers) {
-
                 for (const handler of Object.values(handlers)) {
                     handler(response);
                 }

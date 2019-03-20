@@ -59,8 +59,8 @@
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
     "test": "node scripts/test.js",
-    "electron": "electron ./src/electron-main",
-    "electron-dev": "set NODE_ENV=development&& electron ./src/electron-main"
+    "electron": "electron ./public/electron-main",
+    "electron-dev": "set NODE_ENV=development&& electron ./public/electron-main"
   },
   "eslintConfig": {
     "extends": "react-app"
