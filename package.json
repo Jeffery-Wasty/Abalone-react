@@ -2,6 +2,7 @@
   "name": "abalonejs",
   "version": "0.1.0",
   "private": true,
+  "homepage": "./",
   "dependencies": {
     "@babel/core": "7.2.2",
     "@svgr/webpack": "4.1.0",
@@ -57,7 +58,9 @@
   "scripts": {
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
-    "test": "node scripts/test.js"
+    "test": "node scripts/test.js",
+    "electron": "electron ./src/electron-main",
+    "electron-dev": "set NODE_ENV=development&& electron ./src/electron-main"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -127,5 +130,8 @@
         }
       ]
     ]
+  },
+  "devDependencies": {
+    "electron": "^4.1.0"
   }
 }
