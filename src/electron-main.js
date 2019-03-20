@@ -12,6 +12,7 @@ function createWindow() {
     mainWindow = new BrowserWindow({
         width: 1600,
         height: 900,
+        autoHideMenuBar: true,
         webPreferences: {
             nodeIntegration: true
         }
@@ -23,7 +24,7 @@ function createWindow() {
         protocol: 'file:',
         slashes: true
     });
-    
+
     mainWindow.loadURL(indexURL);
 
     // Open the DevTools.
@@ -62,3 +63,7 @@ app.on('activate', function () {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
+
+process.on('uncaughtException', function (err) {
+    console.error(err);
+});
