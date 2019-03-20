@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { getInitialState } from './InitState';
 import {
     isLegalGroup, generateBoardCoordArray, getHexCornerCoordinate,
     moveMarbles, getSelectedElements, getMoveDirection
@@ -92,7 +91,7 @@ export default class GameBoard extends Component {
     }
 
     updateBoardState = (changeInfoArray) => {
-        let boardState = this.state.curState.length ? this.state.curState : getInitialState(this.state.stateOption);
+        let boardState = this.state.curState.length ? this.state.curState : this.props.boardInitState;
         let oldState = boardState;
         changeInfoArray.forEach(c => {
             const oldLocation = c.originLocation;
@@ -162,7 +161,7 @@ export default class GameBoard extends Component {
     }
 
     render() {
-        const boardState = this.state.curState.length ? this.state.curState : getInitialState(this.state.stateOption);
+        const boardState = this.state.curState.length ? this.state.curState : this.props.boardInitState;
 
         return (
             <div>

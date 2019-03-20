@@ -6,15 +6,16 @@ import Settings from './components/Settings';
 import AbaloneClient from './utils/AbaloneClient';
 import BackgroundPic from './image/bk_main1.jpg';
 import gamePic from './image/bk.jpg';
+import { getInitialState } from './components/InitState';
 
 class App extends Component {
 
   state = {
     gameType: "pvp",
-    boardInitState: "1",
+    boardInitState: 1,
     playerColor: "black",
-    moveLimit: "40",
-    timeLimit: "10",
+    moveLimit: 40,
+    timeLimit: 20,
     pause: false,
     progress: 100,
     timeLeft: 0,
@@ -28,6 +29,7 @@ class App extends Component {
   }
 
   startGame = (initState) => {
+    console.log(initState);
     this.setState({
       timeLeft: parseInt(this.state.timeLimit),
       mainScreen: false,
@@ -143,18 +145,18 @@ class App extends Component {
                   <div style={{ margin: 30 }}>
                     <Row gutter={4}>
                       <Col span={2} offset={2}> 
-                        <Button type="primary" size="large" onClick={this.pauseGame} block>
+                        <Button type="primary" size="large" icon={this.state.status === "pause" ? "caret-right": "pause-circle" } onClick={this.pauseGame} block>
                           {this.state.status === "pause" ? "Resume" : "Pause"}
                         </Button>
                       </Col>
                       <Col span={2}> 
-                        <Button type="primary" size="large" onClick={this.stopGame} block> Stop </Button>
+                        <Button type="danger" size="large" icon="stop" onClick={this.stopGame} block> Stop </Button>
                       </Col>
                       <Col span={2}> 
-                        <Button type="primary" size="large" onClick={this.resetGame} block> Reset </Button>
+                        <Button size="large" icon="rollback" onClick={this.resetGame} block> Reset </Button>
                       </Col>
                       <Col span={2}> 
-                        <Button type="primary" size="large" onClick={this.undoLastMove} block> Undo </Button>
+                        <Button type="dashed" icon="backward" size="large" onClick={this.undoLastMove} block> Undo </Button>
                       </Col>
                     </Row>
                   </div>
@@ -164,11 +166,11 @@ class App extends Component {
             <Row>
               <Col span={11} offset={1}>
                 <div>
-                  <GameBoard />
+                  <GameBoard boardInitState={getInitialState(this.state.boardInitState)} />
                 </div>
                 
                 <div style={{ margin: 20 }}>
-                  <Progress strokeLinecap="square" percent={this.state.progress} />
+                  <Progress showInfo={false} strokeWidth={30} strokeColor="red" strokeLinecap="round" percent={this.state.progress} />
                 </div>
               </Col>
               <Col span={10} offset={1}>

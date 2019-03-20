@@ -54,7 +54,7 @@ export default class GameInfo extends Component {
                 </Col>
 
                 <Col span={12}>
-                  <Countdown title="Time" value={Date.now()} format="ss:SSS" />
+                  <Countdown title="Time" value={10} format="ss:SSS" />
                 </Col>
               </Row>
             </Card>

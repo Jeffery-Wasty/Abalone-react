@@ -5,10 +5,10 @@ export default class Settings extends Component {
 
     state = {
         gameType: "pvp",
-        boardInitState: "1",
+        boardInitState: 1,
         playerColor: "black",
-        moveLimit: "40",
-        timeLimit: "10",
+        moveLimit: 40,
+        timeLimit: 20,
     }
 
     handleGameType = (e) => {
@@ -41,10 +41,10 @@ export default class Settings extends Component {
 
                 <div style={{ margin: 20 }}>
                     <h3>Board Layout</h3>
-                    <Radio.Group value={this.state.initState} onChange={this.handleInitState}>
-                        <Radio.Button style={{ width: 130 }} value="1">Standard</Radio.Button>
-                        <Radio.Button style={{ width: 130 }} value="2">German Daisy</Radio.Button>
-                        <Radio.Button style={{ width: 130 }} value="3">Belgian Daisy</Radio.Button>
+                    <Radio.Group value={this.state.boardInitState} onChange={this.handleInitState}>
+                        <Radio.Button style={{ width: 130 }} value={1}>Standard</Radio.Button>
+                        <Radio.Button style={{ width: 130 }} value={2}>German Daisy</Radio.Button>
+                        <Radio.Button style={{ width: 130 }} value={3}>Belgian Daisy</Radio.Button>
                     </Radio.Group>
                 </div>
 
@@ -76,7 +76,7 @@ export default class Settings extends Component {
                 <div style={{ margin: 20 }}>
                     <h3>Time limit per move</h3>
 
-                    <InputNumber min={1} max={1000} defaultValue={10} onChange={this.handleTimeLimit} />
+                    <InputNumber min={1} max={1000} defaultValue={20} onChange={this.handleTimeLimit} />
                 </div>
 
                 <div style={{ margin: 20 }}>
