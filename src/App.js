@@ -5,6 +5,7 @@ import GameInfo from './components/GameInfo';
 import Settings from './components/Settings';
 import AbaloneClient from './utils/AbaloneClient';
 import BackgroundPic from './image/bk_main1.jpg';
+import gamePic from './image/bk.jpg';
 
 class App extends Component {
 
@@ -136,45 +137,46 @@ class App extends Component {
               <Settings startGame={this.startGame} />
             </Modal>    
           </div> : 
-          <div>
+          <div style={{height: '100vh', backgroundImage: `url(${gamePic})`, backgroundRepeat: 'no-repeat', backgroundSize: 'cover'}}>
             <Row>
               <Col>
-                <div style={{ margin: "50px 200px 50px 260px" }}>
-                  <Progress strokeLinecap="square" percent={this.state.progress} />
-                </div>
-
-              </Col>
+                  <div style={{ margin: 30 }}>
+                    <Row gutter={4}>
+                      <Col span={2} offset={2}> 
+                        <Button type="primary" size="large" onClick={this.pauseGame} block>
+                          {this.state.status === "pause" ? "Resume" : "Pause"}
+                        </Button>
+                      </Col>
+                      <Col span={2}> 
+                        <Button type="primary" size="large" onClick={this.stopGame} block> Stop </Button>
+                      </Col>
+                      <Col span={2}> 
+                        <Button type="primary" size="large" onClick={this.resetGame} block> Reset </Button>
+                      </Col>
+                      <Col span={2}> 
+                        <Button type="primary" size="large" onClick={this.undoLastMove} block> Undo </Button>
+                      </Col>
+                    </Row>
+                  </div>
+                </Col>
             </Row>
+
             <Row>
-              <Col span={3}>
-                <div style={{ margin: "10px 0 0 50px" }}>
-                  {(this.state.status === "stop") ?
-                    <Button style={{ margin: 15, width: 110 }} type="primary" size="large" onClick={this.pauseGame} disabled>
-                      {this.state.status === "pause" ? "Resume" : "Pause"}
-                    </Button> :
-                    <Button style={{ margin: 15, width: 110 }} type="primary" size="large" onClick={this.pauseGame}>
-                      {this.state.status === "pause" ? "Resume" : "Pause"}
-                    </Button>
-                  }
-
-                  {(this.state.status === "stop") ?
-                    <Button style={{ margin: 15, width: 110 }} type="primary" size="large" onClick={this.stopGame} disabled> Stop </Button> :
-                    <Button style={{ margin: 15, width: 110 }} type="primary" size="large" onClick={this.stopGame}> Stop </Button>
-                  }
-
-                  <Button style={{ margin: 15, width: 110 }} type="primary" size="large" onClick={this.resetGame}> Reset </Button>
-                  <Button style={{ margin: 15, width: 110 }} type="primary" size="large" onClick={this.undoLastMove}> Undo </Button>
-                </div>
-              </Col>
-              <Col span={12}>
-                <div style={{ marginLeft: 50 }}>
+              <Col span={11} offset={1}>
+                <div>
                   <GameBoard />
                 </div>
+                
+                <div style={{ margin: 20 }}>
+                  <Progress strokeLinecap="square" percent={this.state.progress} />
+                </div>
               </Col>
-              <Col span={9}>
+              <Col span={10} offset={1}>
                   <GameInfo/>
               </Col>
             </Row>
+
+
           </div>
         }        
       </div>

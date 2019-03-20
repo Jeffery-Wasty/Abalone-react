@@ -12,8 +12,8 @@ export default class GameBoard extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            hexSize: 20,
-            start_point: { x: 105, y: 40 },
+            hexSize: 10,
+            start_point: { x: 80, y: 45 },
             selectedHex: [],
             supportLine: "",
             supportLineVisible: false,
@@ -166,7 +166,7 @@ export default class GameBoard extends Component {
 
         return (
             <div>
-                <svg id="test-polygon" viewBox="0 0 400 350">
+                <svg id="test-polygon" viewBox="0 0 240 200">
                     <defs>
                         <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5"
                             markerWidth="3" markerHeight="3"
@@ -177,8 +177,8 @@ export default class GameBoard extends Component {
 
                     <defs>
                         <pattern id="img1" patternUnits="userSpaceOnUse" width="100%" height="650">
-                            <image xlinkHref="https://media.istockphoto.com/photos/light-wood-texture-background-surface-with-old-natural-pattern-or-old-picture-id803334630" x="-30" y="-30"
-                                width="400" height="400" />
+                            <image xlinkHref="https://www.primary-school-resources.com/wp-content/uploads/2014/11/Wooden-Background-vertical.jpg" x="-30" y="-30"
+                                width="400" height="280" />
                         </pattern>
 
                     </defs>
@@ -222,7 +222,7 @@ export default class GameBoard extends Component {
                                 location={key}
                                 cx={center.x}
                                 cy={center.y}
-                                r="15"
+                                r="7"
                                 fill={(boardState[key] === 1) ? "url(#rgradwhite)" : "url(#rgradblack)"}
                             />
                             : null
