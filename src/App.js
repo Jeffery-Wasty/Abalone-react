@@ -1,8 +1,8 @@
+import { Button, Col, Drawer, InputNumber, Progress, Radio, Row, Timeline } from 'antd';
 import React, { Component } from 'react';
-import GameBoard from './components/GameBoard';
 import './App.css';
-import { Row, Col, Button, Radio, Drawer, InputNumber, Progress, Timeline } from 'antd';
-import Background from './bk.jpg';
+import GameBoard from './components/GameBoard';
+import AbaloneClient from './utils/AbaloneClient';
 
 class App extends Component {
 
@@ -50,11 +50,31 @@ class App extends Component {
     });
   };
 
-  startGame = () => {
+  startGame = async () => {
     this.setState({
       status: "start",
       timeLeft: parseInt(this.state.timeLimit)
     })
+    let boardLayout;
+    switch (this.state.initState) {
+      case "1":
+        boardLayout = "standard";
+        break;
+      case "2":
+        boardLayout = "german_daisy";
+        break;
+      case "3":
+        boardLayout = "belgian_daisy";
+        break;
+    }
+    
+    await AbaloneClient.newGame({
+      boardLayout,
+      gameMode: this.state.gameType,
+      playerColor: this.state.playerColor,
+      turnLimit: this.state.moveLimit,
+      timeLimit: this.state.timeLimit
+    });
 
     this.onClose();
     this.startTimer();
@@ -126,20 +146,20 @@ class App extends Component {
           <Col span={3}>
             <div style={{ margin: "10px 0 0 50px" }}>
               <Button style={{ margin: 15, width: 110 }} type="primary" size="large" onClick={this.showDrawer}> Start Game </Button>
-              {(this.state.status === "stop")? 
-                <Button style={{ margin: 15, width: 110 }} type="primary" size="large" onClick={this.pauseGame} disabled> 
-                  {this.state.status === "pause" ? "Resume" : "Pause"} 
-                </Button> : 
-                <Button style={{ margin: 15, width: 110 }} type="primary" size="large" onClick={this.pauseGame}> 
-                  {this.state.status === "pause" ? "Resume" : "Pause"} 
+              {(this.state.status === "stop") ?
+                <Button style={{ margin: 15, width: 110 }} type="primary" size="large" onClick={this.pauseGame} disabled>
+                  {this.state.status === "pause" ? "Resume" : "Pause"}
+                </Button> :
+                <Button style={{ margin: 15, width: 110 }} type="primary" size="large" onClick={this.pauseGame}>
+                  {this.state.status === "pause" ? "Resume" : "Pause"}
                 </Button>
-              } 
-              
-              {(this.state.status === "stop")? 
-                  <Button style={{ margin: 15, width: 110 }} type="primary" size="large" onClick={this.stopGame} disabled> Stop </Button> :
-                  <Button style={{ margin: 15, width: 110 }} type="primary" size="large" onClick={this.stopGame}> Stop </Button>
               }
-              
+
+              {(this.state.status === "stop") ?
+                <Button style={{ margin: 15, width: 110 }} type="primary" size="large" onClick={this.stopGame} disabled> Stop </Button> :
+                <Button style={{ margin: 15, width: 110 }} type="primary" size="large" onClick={this.stopGame}> Stop </Button>
+              }
+
               <Button style={{ margin: 15, width: 110 }} type="primary" size="large" onClick={this.resetGame}> Reset </Button>
               <Button style={{ margin: 15, width: 110 }} type="primary" size="large" onClick={this.undoLastMove}> Undo </Button>
             </div>
@@ -150,32 +170,32 @@ class App extends Component {
             </div>
           </Col>
           <Col span={9}>
-            <div style={{ margin: '0 200px 0 0', minHeight: 620, border: "1px solid #eeeeee", backgroundColor: "#eeeeee"}}>
-                <div style={{margin: 20}}>
-                  <h3> - White Player</h3>
-                  <h4>Game Score: 3</h4>                
-                  <h4>Time taken: 40s</h4>                  
-                  <h4>Moves taken: 10</h4>  
-                  <h4>Next move: Move G8 to top right</h4>
-                  <Timeline>
-                    <Timeline.Item>Move A1 to right</Timeline.Item>
-                    <Timeline.Item>Move B3 to top left</Timeline.Item>
-                    <Timeline.Item>Move D4 C4 B4 and push E4 F4 to top left</Timeline.Item>
-                  </Timeline>
+            <div style={{ margin: '0 200px 0 0', minHeight: 620, border: "1px solid #eeeeee", backgroundColor: "#eeeeee" }}>
+              <div style={{ margin: 20 }}>
+                <h3> - White Player</h3>
+                <h4>Game Score: 3</h4>
+                <h4>Time taken: 40s</h4>
+                <h4>Moves taken: 10</h4>
+                <h4>Next move: Move G8 to top right</h4>
+                <Timeline>
+                  <Timeline.Item>Move A1 to right</Timeline.Item>
+                  <Timeline.Item>Move B3 to top left</Timeline.Item>
+                  <Timeline.Item>Move D4 C4 B4 and push E4 F4 to top left</Timeline.Item>
+                </Timeline>
 
-                  <h3> - Black Player</h3>
-                  <h4>Game Score: 2</h4>
-                  <h4>Time taken: 20s</h4>
-                  
-                  <h4>Moves taken: 11</h4>
-                  <h4>Next move: Move G8 to top right</h4>
-                  <Timeline>
-                    <Timeline.Item>Move A1 to right</Timeline.Item>
-                    <Timeline.Item>Move B3 to top left</Timeline.Item>
-                    <Timeline.Item>Move D4 C4 B4 and push E4 F4 to top left</Timeline.Item>
-                    <Timeline.Item>Move D3 C3 to left</Timeline.Item>
-                  </Timeline>
-                </div>
+                <h3> - Black Player</h3>
+                <h4>Game Score: 2</h4>
+                <h4>Time taken: 20s</h4>
+
+                <h4>Moves taken: 11</h4>
+                <h4>Next move: Move G8 to top right</h4>
+                <Timeline>
+                  <Timeline.Item>Move A1 to right</Timeline.Item>
+                  <Timeline.Item>Move B3 to top left</Timeline.Item>
+                  <Timeline.Item>Move D4 C4 B4 and push E4 F4 to top left</Timeline.Item>
+                  <Timeline.Item>Move D3 C3 to left</Timeline.Item>
+                </Timeline>
+              </div>
             </div>
           </Col>
         </Row>
