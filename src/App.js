@@ -112,7 +112,8 @@ class App extends Component {
 
   render() {
     return (
-      <div style={{backgroundImage: `url(${Background})`, backgroundRepeat: 'no-repeat', backgroundSize: 'cover'}}>
+      // <div style={{backgroundImage: `url(${Background})`, backgroundRepeat: 'no-repeat', backgroundSize: 'cover'}}>
+      <div>
         <Row>
           <Col>
             <div style={{ margin: "50px 200px 50px 260px" }}>
