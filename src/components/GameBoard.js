@@ -4,47 +4,77 @@ import {
     moveMarbles, getSelectedElements, getMoveDirection
 } from './Util';
 import { destTable } from './DestTable';
-import AbaloneClient from '../utils/AbaloneClient';
+// import AbaloneClient from '../utils/AbaloneClient';
+import { Button, Col, Progress, Row } from 'antd';
+import GameInfoBoard from './GameInfoBoard';
+
+
+const start_point = { x: 80, y: 45 };
+const hexSize = 10
 
 export default class GameBoard extends Component {
 
     constructor(props) {
         super(props);
         this.state = {
-            hexSize: 10,
-            start_point: { x: 80, y: 45 },
             selectedHex: [],
             supportLine: "",
             supportLineVisible: false,
             curState: [],
-            stateOption: 1
+            stateOption: 1,
+            progress: 100,
+            timeLeft: 0,
+            pause: false
         }
 
     }
 
     componentWillMount() {
         this.setState({
-            boardArray: generateBoardCoordArray(this.state.start_point, this.state.hexSize)
+            boardArray: generateBoardCoordArray(start_point, hexSize),
+            gameType: this.props.gameSettings.gameType,
+            playerColor: this.props.gameSettings.playerColor,
+            curState: this.props.boardInitState,
+            timeLimit: this.props.gameSettings.timeLimit,
+            turnLimit: this.props.gameSettings.turnLimit,
+            turn: 1
         })
     }
 
     componentDidMount = () => {
-        this.listenerId = AbaloneClient.addHandler('game-state', (res) => {
-            const state = JSON.parse(res.state);
-            this.setState({ curState: state });
-        });
+        // this.listenerId = AbaloneClient.addHandler('game-state', (res) => {
+        //     const state = JSON.parse(res.state);
+        //     this.setState({ curState: state });
+        // });
+        this.setState({
+            timeLeft: this.props.gameSettings.timeLimit
+        })
+
+        this.startTimer();
     }
 
     componentWillUnmount = () => {
-        AbaloneClient.removeHandler('game-state', this.listenerId);
+        //AbaloneClient.removeHandler('game-state', this.listenerId);
     }
 
     clickMarble = (e) => {
+        console.log(this.state.turn, e.target.getAttribute('color'))
+        //black move in odd turn, white move in even turn
+        if ((this.state.turn % 2 === 0 && e.target.getAttribute('color') === '2') ||
+            (this.state.turn % 2 === 1 && e.target.getAttribute('color') === '1')) {
+            return;
+        }
+
+        if (this.props.gameSettings.gameType === "pve" && this.props.gameSettings.playerColor !== parseInt(e.target.getAttribute('color'))) {
+            return;
+        }
+
         //location already selected, deselect
         const selected = this.locationSelected(e.target.getAttribute('location'));
         if (selected) {
             this.setState({ selectedHex: [] });
         } else {
+
             if (this.state.supportLineVisible) {
                 //TODO: only move when there is supportline
             } else {
@@ -91,7 +121,7 @@ export default class GameBoard extends Component {
     }
 
     updateBoardState = (changeInfoArray) => {
-        let boardState = this.state.curState.length ? this.state.curState : this.props.boardInitState;
+        let boardState = this.state.curState;;
         let oldState = boardState;
         changeInfoArray.forEach(c => {
             const oldLocation = c.originLocation;
@@ -112,9 +142,27 @@ export default class GameBoard extends Component {
             element.setAttribute('cy', start.y);
         })
 
+        if (this.state.clock) {
+            clearInterval(this.state.clock);
+        }
+
+
         this.setState({
-            curState: boardState
+            curState: boardState,
+            timeLeft: this.props.gameSettings.timeLimit,
+            progress: 100,
+            pause: false
         })
+
+        this.setState(prevState => ({
+            curState: boardState,
+            timeLeft: this.props.gameSettings.timeLimit,
+            progress: 100,
+            pause: false,
+            turn: prevState.turn + 1
+        }));
+
+        this.startTimer();
 
     }
 
@@ -160,84 +208,161 @@ export default class GameBoard extends Component {
         })
     }
 
+    pauseGame = () => {
+        if (this.state.pause) {
+            this.setState({ pause: false })
+            this.startTimer()
+        } else {
+            this.setState({ pause: true })
+        }
+    }
+
+    stopGame = () => {
+        this.props.stopGame();
+    }
+
+    resetGame = () => {
+        this.setState({
+            curState: this.props.boardInitState
+        })
+    }
+
+    undoLastMove = () => {
+
+    }
+
+    startTimer = () => {
+        const period = 10;
+
+        let clock = setInterval(() => {
+            if (this.state.pause) {
+                clearInterval(clock);
+            } else {
+                if (this.state.timeLeft > 0) {
+                    let timeLeft = this.state.timeLeft - 1 / period;
+                    let progress = (timeLeft/ this.props.gameSettings.timeLimit) * 100;
+
+                    this.setState({
+                        timeLeft, progress
+                    })
+                } else {
+                    clearInterval(clock);
+                }
+            }
+        }, 1000 / period);
+
+        this.setState({
+            clock
+        })
+    }
+
     render() {
-        const boardState = this.state.curState.length ? this.state.curState : this.props.boardInitState;
 
         return (
-            <div>
-                <svg id="test-polygon" viewBox="0 0 240 200">
-                    <defs>
-                        <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5"
-                            markerWidth="3" markerHeight="3"
-                            orient="auto-start-reverse">
-                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#fff176" />
-                        </marker>
-                    </defs>
+            <div>                
+                <Row>
+                    <Col span={11} offset={1}>   
+                        <div style={{ margin: 30 }}>
+                            <Row gutter={4}>
+                                <Col span={5} offset={1}>
+                                    <Button type="primary" size="large" icon={this.state.status === "pause" ? "caret-right" : "pause-circle"} onClick={this.pauseGame} block>
+                                        {this.state.status === "pause" ? "Resume" : "Pause"}
+                                    </Button>
+                                </Col>
+                                <Col span={5}>
+                                    <Button type="danger" size="large" icon="stop" onClick={this.stopGame} block> Stop </Button>
+                                </Col>
+                                <Col span={5}>
+                                    <Button size="large" icon="rollback" onClick={this.resetGame} block> Reset </Button>
+                                </Col>
+                                <Col span={5}>
+                                    <Button type="dashed" icon="backward" size="large" onClick={this.undoLastMove} block> Undo </Button>
+                                </Col>
+                            </Row>
+                        </div>       
+                        <div>
+                            <svg id="test-polygon" viewBox="0 0 240 200">
+                                <defs>
+                                    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5"
+                                        markerWidth="3" markerHeight="3"
+                                        orient="auto-start-reverse">
+                                        <path d="M 0 0 L 10 5 L 0 10 z" fill="#fff176" />
+                                    </marker>
+                                </defs>
 
-                    <defs>
-                        <pattern id="img1" patternUnits="userSpaceOnUse" width="100%" height="650">
-                            <image xlinkHref="https://www.primary-school-resources.com/wp-content/uploads/2014/11/Wooden-Background-vertical.jpg" x="-30" y="-30"
-                                width="400" height="280" />
-                        </pattern>
+                                <defs>
+                                    <pattern id="img1" patternUnits="userSpaceOnUse" width="100%" height="650">
+                                        <image xlinkHref="https://www.primary-school-resources.com/wp-content/uploads/2014/11/Wooden-Background-vertical.jpg" x="-30" y="-30"
+                                            width="400" height="280" />
+                                    </pattern>
 
-                    </defs>
+                                </defs>
 
-                    <defs>
-                        <radialGradient id="rgradwhite" cx="50%" cy="50%" r="75%" >
-                            <stop offset="0%" style={{ stopColor: "rgb(255,255,255)", stopOpacity: "1" }} />
-                            <stop offset="50%" style={{ stopColor: "rgb(255,255,255)", stopOpacity: "1" }} />
-                            <stop offset="100%" style={{ stopColor: "rgb(0,0,0)", stopOpacity: "1" }} />
-                        </radialGradient>
+                                <defs>
+                                    <radialGradient id="rgradwhite" cx="50%" cy="50%" r="75%" >
+                                        <stop offset="0%" style={{ stopColor: "rgb(255,255,255)", stopOpacity: "1" }} />
+                                        <stop offset="50%" style={{ stopColor: "rgb(255,255,255)", stopOpacity: "1" }} />
+                                        <stop offset="100%" style={{ stopColor: "rgb(0,0,0)", stopOpacity: "1" }} />
+                                    </radialGradient>
 
-                        <radialGradient id="rgradblack" cx="50%" cy="50%" r="75%" >
-                            <stop offset="0%" style={{ stopColor: "rgb(0,0,0)", stopOpacity: "1" }} />
-                            <stop offset="50%" style={{ stopColor: "rgb(0,0,0)", stopOpacity: "1" }} />
-                            <stop offset="100%" style={{ stopColor: "rgb(255,255,255)", stopOpacity: "1" }} />
-                        </radialGradient>
-                    </defs>
+                                    <radialGradient id="rgradblack" cx="50%" cy="50%" r="75%" >
+                                        <stop offset="0%" style={{ stopColor: "rgb(0,0,0)", stopOpacity: "1" }} />
+                                        <stop offset="50%" style={{ stopColor: "rgb(0,0,0)", stopOpacity: "1" }} />
+                                        <stop offset="100%" style={{ stopColor: "rgb(255,255,255)", stopOpacity: "1" }} />
+                                    </radialGradient>
+                                </defs>
 
-                    <rect x="0" y="0" width="350" height="320" stroke="#c2c2c2" fill="url(#img1)" />
+                                <rect x="0" y="0" width="350" height="320" stroke="#c2c2c2" fill="url(#img1)" />
 
-                    {this.state.boardArray.map((center, key) =>
-                        <polygon
-                            key={key}
-                            location={key}
-                            cx={center.x}
-                            cy={center.y}
-                            points={getHexCornerCoordinate(center, this.state.hexSize)}
-                            fill={this.locationSelected(key) ? '#d50000' : '#fa5'}
-                            stroke="#000"
-                            onMouseOver={this.mouseOverHex}
-                            onMouseOut={this.mouseOutHex}
-                            onClick={this.clickHex}
-                        />
-                    )}
+                                {this.state.boardArray.map((center, key) =>
+                                    <polygon
+                                        key={key}
+                                        location={key}
+                                        cx={center.x}
+                                        cy={center.y}
+                                        points={getHexCornerCoordinate(center, hexSize)}
+                                        fill={this.locationSelected(key) ? '#d50000' : '#fa5'}
+                                        stroke="#000"
+                                        onMouseOver={this.mouseOverHex}
+                                        onMouseOut={this.mouseOutHex}
+                                        onClick={this.clickHex}
+                                    />
+                                )}
 
-                    {this.state.boardArray.map((center, key) =>
-                        boardState[key] !== 0 ?
-                            <circle
-                                key={key}
-                                onClick={this.clickMarble}
-                                location={key}
-                                cx={center.x}
-                                cy={center.y}
-                                r="7"
-                                fill={(boardState[key] === 1) ? "url(#rgradwhite)" : "url(#rgradblack)"}
-                            />
-                            : null
-                    )}
+                                {this.state.boardArray.map((center, key) =>
+                                    this.state.curState[key] !== 0 ?
+                                        <circle
+                                            key={key}
+                                            onClick={this.clickMarble}
+                                            location={key}
+                                            color={this.state.curState[key]}
+                                            cx={center.x}
+                                            cy={center.y}
+                                            r="7"
+                                            fill={(this.state.curState[key] === 1) ? "url(#rgradwhite)" : "url(#rgradblack)"}
+                                        />
+                                        : null
+                                )}
 
-                    <polyline
-                        style={{ visibility: this.state.supportLineVisible }}
-                        points={this.state.supportLine}
-                        stroke="#fff176"
-                        strokeWidth="2"
-                        strokeDasharray="3,3"
-                        markerEnd="url(#arrow)"
-                    />
-                </svg>
+                                <polyline
+                                    style={{ visibility: this.state.supportLineVisible }}
+                                    points={this.state.supportLine}
+                                    stroke="#fff176"
+                                    strokeWidth="2"
+                                    strokeDasharray="3,3"
+                                    markerEnd="url(#arrow)"
+                                />
+                            </svg>
+                        </div>
 
-
+                        <div style={{ margin: 20 }}>
+                            <Progress showInfo={false} strokeWidth={20} strokeColor="square" strokeLinecap="round" percent={this.state.progress} />
+                        </div>
+                    </Col>
+                    <Col span={10} offset={1}>
+                        <GameInfoBoard gameInfo={this.state} />
+                    </Col>
+                </Row>
             </div>
         )
     }

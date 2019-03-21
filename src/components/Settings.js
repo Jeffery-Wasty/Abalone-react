@@ -6,7 +6,7 @@ export default class Settings extends Component {
     state = {
         gameType: "pvp",
         boardInitState: 1,
-        playerColor: "black",
+        playerColor: 2,
         moveLimit: 40,
         timeLimit: 20,
     }
@@ -61,8 +61,8 @@ export default class Settings extends Component {
                     <div style={{ margin: 20 }}>
                         <h3>Player Color Selection</h3>
                         <Radio.Group value={this.state.playerColor} onChange={this.handleColorSelection}>
-                            <Radio.Button style={{ width: 130 }} value="white">White</Radio.Button>
-                            <Radio.Button style={{ width: 130 }} value="black">Black</Radio.Button>
+                            <Radio.Button style={{ width: 130 }} value={1}>White</Radio.Button>
+                            <Radio.Button style={{ width: 130 }} value={2}>Black</Radio.Button>
                         </Radio.Group>
                     </div> : null}
 
