@@ -19,49 +19,22 @@ export default class GameInfoBoard extends Component {
   }
   render() {
     const whiteBkStyle = (this.props.gameInfo.turn % 2 === 0) ? {} : {backgroundColor: "#bdbdbd"};
-    const blackBkStyle = (this.props.gameInfo.turn % 2 === 1) ? {} : {backgroundColor: "#bdbdbd"}
+    const blackBkStyle = (this.props.gameInfo.turn % 2 === 1) ? {} : {backgroundColor: "#bdbdbd"};
 
+    const whiteTimelineStyle = (this.props.gameInfo.turn % 2 === 0) ? {minHeight: 550} : {backgroundColor: "#bdbdbd", minHeight: 550};
+    const blackTimelineStyle = (this.props.gameInfo.turn % 2 === 1) ? {minHeight: 550} : {backgroundColor: "#bdbdbd", minHeight: 550};
+    const turnSuffix = `/ ${this.props.gameInfo.moveLimit}`;
     return (
       <div style={{ maxHeight: 600 }}>
         
         <Row>
           <div style={{ margin: 20, float: "right" }}>
-            <Statistic value={Math.round(this.props.gameInfo.turn/2)} suffix="/ 40" valueStyle={{ fontSize: 40, color: "#fff" }}/>
+            <Statistic value={Math.round(this.props.gameInfo.turn/2)} prefix="Turn: " suffix={turnSuffix} valueStyle={{ fontSize: 40, color: "#fafafa" }}/>
           </div>
         </Row>
 
         <Row gutter={16}>
-          <Col span={12} >
-            <Card style={whiteBkStyle}>
-              <Row>
-                <Col span={12}>
-                  <Statistic
-                    title="White Player"
-                    value={3}
-                    precision={0}
-                    valueStyle={{ color: '#3f8600' }}
-                    prefix={<Icon type="smile" />}
-                  />
-                </Col>
-
-                <Col span={12} >
-                  <Statistic title="Time" value={this.getTimer(1)} />
-                </Col>
-              </Row>
-            </Card>
-
-            <Card style={whiteBkStyle}>
-              <Timeline >
-                <Timeline.Item>Move A1 to right - 3s</Timeline.Item>
-                <Timeline.Item>Move B3 to top left - 5s</Timeline.Item>
-                <Timeline.Item>Move D4 C4 B4 and push E4 F4 to top left - 10s</Timeline.Item>
-                <Timeline.Item>Move A1 to right - 3s</Timeline.Item>
-                <Timeline.Item>Move B3 to top left - 5s</Timeline.Item>
-                <Timeline.Item>Move D4 C4 B4 and push E4 F4 to top left - 10s</Timeline.Item>
-              </Timeline>
-            </Card>
-
-          </Col>
+          
           <Col span={12}>
             <Card style={blackBkStyle} >
               <Row>
@@ -76,12 +49,12 @@ export default class GameInfoBoard extends Component {
                 </Col>
 
                 <Col span={12}>
-                  <Statistic title="Time" value={this.getTimer(2)} />
+                  <Statistic title="Time" value={this.getTimer(2)} suffix=" s" />
                 </Col>
               </Row>
             </Card>
 
-            <Card style={blackBkStyle}>
+            <Card style={blackTimelineStyle}>
               <Timeline>
                 <Timeline.Item>Move A1 to right - 2s</Timeline.Item>
                 <Timeline.Item>Move B3 to top left - 5s</Timeline.Item>
@@ -91,6 +64,38 @@ export default class GameInfoBoard extends Component {
                 <Timeline.Item>Move B3 to top left - 5s</Timeline.Item>
                 <Timeline.Item>Move D4 C4 B4 and push E4 F4 to top left - 10s</Timeline.Item>
                 <Timeline.Item>Move D3 C3 to left - 8s</Timeline.Item>
+              </Timeline>
+            </Card>
+
+          </Col>
+
+          <Col span={12} >
+            <Card style={whiteBkStyle}>
+              <Row>
+                <Col span={12}>
+                  <Statistic
+                    title="White Player"
+                    value={3}
+                    precision={0}
+                    valueStyle={{ color: '#3f8600' }}
+                    prefix={<Icon type="smile" />}
+                  />
+                </Col>
+
+                <Col span={12} >
+                  <Statistic title="Time" value={this.getTimer(1)} suffix=" s" />
+                </Col>
+              </Row>
+            </Card>
+
+            <Card style={whiteTimelineStyle}>
+              <Timeline >
+                <Timeline.Item>Move A1 to right - 3s</Timeline.Item>
+                <Timeline.Item>Move B3 to top left - 5s</Timeline.Item>
+                <Timeline.Item>Move D4 C4 B4 and push E4 F4 to top left - 10s</Timeline.Item>
+                <Timeline.Item>Move A1 to right - 3s</Timeline.Item>
+                <Timeline.Item>Move B3 to top left - 5s</Timeline.Item>
+                <Timeline.Item>Move D4 C4 B4 and push E4 F4 to top left - 10s</Timeline.Item>
               </Timeline>
             </Card>
 

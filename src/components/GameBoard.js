@@ -8,7 +8,6 @@ import { destTable } from './DestTable';
 import { Button, Col, Progress, Row } from 'antd';
 import GameInfoBoard from './GameInfoBoard';
 
-
 const start_point = { x: 80, y: 45 };
 const hexSize = 10
 
@@ -21,10 +20,12 @@ export default class GameBoard extends Component {
             supportLine: "",
             supportLineVisible: false,
             curState: [],
+            lastState:[],
             stateOption: 1,
             progress: 100,
             timeLeft: 0,
-            pause: false
+            pause: false,
+            start: false,
         }
 
     }
@@ -36,7 +37,7 @@ export default class GameBoard extends Component {
             playerColor: this.props.gameSettings.playerColor,
             curState: this.props.boardInitState,
             timeLimit: this.props.gameSettings.timeLimit,
-            turnLimit: this.props.gameSettings.turnLimit,
+            moveLimit: this.props.gameSettings.moveLimit,
             turn: 1
         })
     }
@@ -46,11 +47,6 @@ export default class GameBoard extends Component {
         //     const state = JSON.parse(res.state);
         //     this.setState({ curState: state });
         // });
-        this.setState({
-            timeLeft: this.props.gameSettings.timeLimit
-        })
-
-        this.startTimer();
     }
 
     componentWillUnmount = () => {
@@ -58,7 +54,6 @@ export default class GameBoard extends Component {
     }
 
     clickMarble = (e) => {
-        console.log(this.state.turn, e.target.getAttribute('color'))
         //black move in odd turn, white move in even turn
         if ((this.state.turn % 2 === 0 && e.target.getAttribute('color') === '2') ||
             (this.state.turn % 2 === 1 && e.target.getAttribute('color') === '1')) {
@@ -121,8 +116,10 @@ export default class GameBoard extends Component {
     }
 
     updateBoardState = (changeInfoArray) => {
-        let boardState = this.state.curState;;
-        let oldState = boardState;
+        let boardState = [...this.state.curState];
+        let oldState = [...this.state.curState];
+        
+        console.log("top", this.state.curState, oldState);
         changeInfoArray.forEach(c => {
             const oldLocation = c.originLocation;
             const newLocation = c.destLocation;
@@ -146,15 +143,8 @@ export default class GameBoard extends Component {
             clearInterval(this.state.clock);
         }
 
-
-        this.setState({
-            curState: boardState,
-            timeLeft: this.props.gameSettings.timeLimit,
-            progress: 100,
-            pause: false
-        })
-
         this.setState(prevState => ({
+            lastState: oldState,
             curState: boardState,
             timeLeft: this.props.gameSettings.timeLimit,
             progress: 100,
@@ -208,6 +198,15 @@ export default class GameBoard extends Component {
         })
     }
 
+    startGame = () => {        
+        this.setState({
+            start: true,
+            timeLeft: this.props.gameSettings.timeLimit
+        })
+
+        this.startTimer();
+    }
+
     pauseGame = () => {
         if (this.state.pause) {
             this.setState({ pause: false })
@@ -222,13 +221,32 @@ export default class GameBoard extends Component {
     }
 
     resetGame = () => {
+        if (this.state.clock) {
+            clearInterval(this.state.clock);
+        }
+
         this.setState({
-            curState: this.props.boardInitState
+            curState: this.props.boardInitState,
+            turn: 1,
+            progress: 100,
+            pause: false,
+            start: false
         })
     }
 
     undoLastMove = () => {
+        if(!this.state.lastState.length){
+            return;
+        }
 
+        this.setState(prevState => ({
+            lastState: [],
+            curState: prevState.lastState,
+            timeLeft: this.props.gameSettings.timeLimit,
+            progress: 100,
+            pause: false,
+            turn: prevState.turn - 1
+        }));
     }
 
     startTimer = () => {
@@ -263,19 +281,23 @@ export default class GameBoard extends Component {
                 <Row>
                     <Col span={11} offset={1}>   
                         <div style={{ margin: 30 }}>
-                            <Row gutter={4}>
-                                <Col span={5} offset={1}>
-                                    <Button type="primary" size="large" icon={this.state.status === "pause" ? "caret-right" : "pause-circle"} onClick={this.pauseGame} block>
-                                        {this.state.status === "pause" ? "Resume" : "Pause"}
+                            <Row gutter={4}>                            
+                                <Col span={4}>
+                                    {this.state.start? <Button type="primary" size="large" icon="start" onClick={this.startGame} block disabled> Start </Button> :
+                                    <Button type="primary" size="large" icon="start" onClick={this.startGame} block> Start </Button>}
+                                </Col>
+                                <Col span={4}>
+                                    <Button type="primary" size="large" icon={this.state.pause? "caret-right" : "pause-circle"} onClick={this.pauseGame} block>
+                                        {this.state.pause? "Resume" : "Pause"}
                                     </Button>
                                 </Col>
-                                <Col span={5}>
+                                <Col span={4}>
                                     <Button type="danger" size="large" icon="stop" onClick={this.stopGame} block> Stop </Button>
                                 </Col>
-                                <Col span={5}>
+                                <Col span={4}>
                                     <Button size="large" icon="rollback" onClick={this.resetGame} block> Reset </Button>
                                 </Col>
-                                <Col span={5}>
+                                <Col span={4}>
                                     <Button type="dashed" icon="backward" size="large" onClick={this.undoLastMove} block> Undo </Button>
                                 </Col>
                             </Row>
