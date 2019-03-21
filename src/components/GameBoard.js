@@ -89,7 +89,7 @@ export default class GameBoard extends Component {
         }
     }
 
-    clickHex = async (e) => {
+    clickHex = (e) => {
         if (this.state.supportLineVisible) {
             //calculate direction
             const oldLocation = this.state.selectedHex[0];
@@ -109,43 +109,50 @@ export default class GameBoard extends Component {
                 changeInfoArray[index].destLocation = destLocation;
                 changeInfoArray[index].start = this.state.boardArray[marble.location];
                 changeInfoArray[index].end = this.state.boardArray[destLocation];
+                changeInfoArray[index].direction = moveDirection;
             })
 
             this.setState({ selectedHex: [] });
 
-            //move all selected marbles
-            await moveMarbles(changeInfoArray);
-
-            //update move history
-            let action = `Turn ${Math.round(this.state.turn/2)}: `;            
-            
-            changeInfoArray.forEach(element => {
-                action += boardNameArray[element.originLocation] + " ";
-            })
-
-            action += getArrowSymbol(moveDirection);
-            action += ` - Time: ${Math.round(this.state.timeLimit - this.state.timeLeft)}s`;
-
-            if(this.state.turn % 2 === 0){
-                this.setState(prevState => ({
-                    whiteMoveHistory: [...prevState.whiteMoveHistory, action]          
-                }));            
-            } else {
-                this.setState(prevState => ({
-                    blackMoveHistory: [...prevState.blackMoveHistory, action]          
-                }));            
-            }
-
-            this.updateBoardState(changeInfoArray);
-
+            this.makeMove(changeInfoArray);
         }
+    }
+
+    makeMove = async (changeInfoArray) => {
+        if(!changeInfoArray.length){
+            return;
+        }
+
+        //move all selected marbles
+        await moveMarbles(changeInfoArray);
+
+        //update move history
+        let action = `Turn ${Math.round(this.state.turn/2)}: `;            
+        
+        changeInfoArray.forEach(element => {
+            action += boardNameArray[element.originLocation] + " ";
+        })
+
+        action += getArrowSymbol(changeInfoArray[0].direction);
+        action += ` - Time: ${Math.round(this.state.timeLimit - this.state.timeLeft)}s`;
+
+        if(this.state.turn % 2 === 0){
+            this.setState(prevState => ({
+                whiteMoveHistory: [...prevState.whiteMoveHistory, action]          
+            }));            
+        } else {
+            this.setState(prevState => ({
+                blackMoveHistory: [...prevState.blackMoveHistory, action]          
+            }));            
+        }
+
+        this.updateBoardState(changeInfoArray);
     }
 
     updateBoardState = (changeInfoArray) => {
         let boardState = [...this.state.curState];
         let oldState = [...this.state.curState];
         
-        console.log("top", this.state.curState, oldState);
         changeInfoArray.forEach(c => {
             const oldLocation = c.originLocation;
             const newLocation = c.destLocation;
@@ -176,11 +183,17 @@ export default class GameBoard extends Component {
             progress: 100,
             pause: false,
             turn: prevState.turn + 1            
-        }));
-
-        
+        }));        
 
         this.startTimer();
+
+        //AI move
+        if(this.props.gameSettings.gameType === "pve" && (this.state.turn % 2 === (2 - this.state.playerColor))){
+            this.makeAIMove();
+        }
+    }
+
+    makeAIMove = () => {
 
     }
 
