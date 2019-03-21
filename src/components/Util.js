@@ -211,6 +211,11 @@ export const moveMarbles = (changeInfoArray) => {
             
             if(counter >= moves){
                 clearInterval(clock);
+                //reset marble coordinates for animation purpose
+                changeInfoArray.forEach(({ element, start }) => {
+                    element.setAttribute('cx', start.x);
+                    element.setAttribute('cy', start.y);
+                })
                 resolve("completed");
             } else {
                 counter++;
@@ -220,8 +225,6 @@ export const moveMarbles = (changeInfoArray) => {
 
     })
 }
-
-
 
 export const getChangeInfoArray = (selectedHex, moveDirection, boardArray) => {
     let changeInfoArray = getSelectedElements(selectedHex);
@@ -238,3 +241,33 @@ export const getChangeInfoArray = (selectedHex, moveDirection, boardArray) => {
     return changeInfoArray;
 }
 
+export const getNextState = (changeInfoArray, curState) => {
+    let nextState = [...curState];     
+
+    changeInfoArray.forEach(c1 => {
+        nextState[c1.destLocation] = curState[c1.originLocation];
+
+        let override = changeInfoArray.find(c2 => {
+            return c2.destLocation === parseInt(c1.originLocation)
+        })
+
+        if (!override) {
+            nextState[c1.originLocation] = 0;
+        }
+    })
+
+    return nextState;
+}
+
+export const getNextStateByAIAction = (curState, action) => {
+    if(!action.length){
+        return;
+    }
+
+    let nextState = [...curState];
+    action.forEach(move => {
+        nextState[move[0]] = move[1];
+    })
+
+    return nextState;
+}

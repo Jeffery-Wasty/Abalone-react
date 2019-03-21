@@ -23,13 +23,13 @@ export default class GameInfoBoard extends Component {
 
     const whiteTimelineStyle = (this.props.gameInfo.turn % 2 === 0) ? { minHeight: '60vh', maxHeight: '60vh' } : { opacity: 0.5, minHeight: '60vh', maxHeight: '60vh' };
     const blackTimelineStyle = (this.props.gameInfo.turn % 2 === 1) ? { minHeight: '60vh', maxHeight: '60vh' } : { opacity: 0.5, minHeight: '60vh', maxHeight: '60vh' };
-    const turnSuffix = `/ ${this.props.gameInfo.moveLimit}`;
+    const turnSuffix = `/ ${this.props.gameInfo.moveLimit * 2}`;
     return (
       <div style={{ maxHeight: 600 }}>
 
         <Row>
           <div style={{ margin: 20, float: "right" }}>
-            <Statistic value={Math.round(this.props.gameInfo.turn / 2)} prefix="Turn: " suffix={turnSuffix} valueStyle={{ fontSize: 40, color: "#fafafa" }} />
+            <Statistic value={this.props.gameInfo.turn} prefix="Turn: " suffix={turnSuffix} valueStyle={{ fontSize: 40, color: "#fafafa" }} />
           </div>
         </Row>
 

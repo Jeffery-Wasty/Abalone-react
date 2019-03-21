@@ -1,14 +1,16 @@
 import React, { Component } from 'react';
 import {
     isLegalGroup, generateBoardCoordArray, getHexCornerCoordinate,
-    moveMarbles, getMoveDirection, boardNameArray, getArrowSymbol, getChangeInfoArray
+    moveMarbles, getMoveDirection, boardNameArray, getArrowSymbol, 
+    getChangeInfoArray, getNextStateByAIAction, getNextState
 } from './Util';
 import AbaloneClient from '../utils/AbaloneClient';
 import { Button, Col, Progress, Row } from 'antd';
 import GameInfoBoard from './GameInfoBoard';
 
-const start_point = { x: 80, y: 45 };
-const hexSize = 10
+const start_point = { x: 75, y: 25 };
+const hexSize = 13;
+const circleRadius = 10;
 
 export default class GameBoard extends Component {
 
@@ -52,6 +54,9 @@ export default class GameBoard extends Component {
 
     componentWillUnmount = () => {
         //AbaloneClient.removeHandler('game-state', this.listenerId);
+        if (this.state.clock) {
+            clearInterval(this.state.clock);
+        }
     }
 
     clickMarble = (e) => {
@@ -60,11 +65,11 @@ export default class GameBoard extends Component {
         }
 
         //black move in odd turn, white move in even turn
-        if ((this.state.turn % 2 === 0 && e.target.getAttribute('color') === '2') ||
-            (this.state.turn % 2 === 1 && e.target.getAttribute('color') === '1')) {
+        if (this.state.turn % 2 === (2 - parseInt(e.target.getAttribute('color')))){
             return;
         }
 
+        //AI turn
         if (this.props.gameSettings.gameType === "pve" && this.props.gameSettings.playerColor !== parseInt(e.target.getAttribute('color'))) {
             return;
         }
@@ -90,6 +95,7 @@ export default class GameBoard extends Component {
 
     clickHex = (e) => {
         if (this.state.supportLineVisible) {
+
             //calculate direction
             const oldLocation = this.state.selectedHex[0];
             const newLocation = e.target.getAttribute('location');
@@ -115,9 +121,23 @@ export default class GameBoard extends Component {
         //move all selected marbles
         await moveMarbles(changeInfoArray);
 
-        //update move history
-        let action = `Turn ${Math.round(this.state.turn/2)}: `;            
+        //update move history board
+        this.updateMoveHistoryBoard(changeInfoArray);    
+
+        //update board state
+        const nextState = getNextState(changeInfoArray, this.state.curState);
+        this.updateBoardState(nextState);
         
+        //If pve and AI turn, start AI move
+        if(this.props.gameSettings.gameType === "pve" && (this.state.turn % 2 === (2 - this.state.playerColor))){
+            this.makeAIMove();
+        }
+    }
+
+    updateMoveHistoryBoard = (changeInfoArray) => {
+        //update move history
+        let action = `Turn ${this.state.turn}: `;            
+
         changeInfoArray.forEach(element => {
             action += boardNameArray[element.originLocation] + " ";
         })
@@ -134,39 +154,15 @@ export default class GameBoard extends Component {
                 blackMoveHistory: [...prevState.blackMoveHistory, action]          
             }));            
         }
-
-        this.updateBoardState(changeInfoArray);
     }
 
-    updateBoardState = (changeInfoArray) => {
-        let boardState = [...this.state.curState];
-        let oldState = [...this.state.curState];
-        
-        changeInfoArray.forEach(c => {
-            const oldLocation = c.originLocation;
-            const newLocation = c.destLocation;
-            boardState[newLocation] = oldState[oldLocation];
-
-            let override = changeInfoArray.find(c => {
-                return c.destLocation === parseInt(oldLocation)
-            })
-
-            if (!override) {
-                boardState[oldLocation] = 0;
-            }
-        })
-
-        changeInfoArray.forEach(({ element, start }) => {
-            element.setAttribute('cx', start.x);
-            element.setAttribute('cy', start.y);
-        })
-
+    updateBoardState = (boardState) => {
         if (this.state.clock) {
             clearInterval(this.state.clock);
         }
 
         this.setState(prevState => ({
-            lastState: oldState,
+            lastState: prevState.curState,
             curState: boardState,
             timeLeft: this.props.gameSettings.timeLimit,
             progress: 100,
@@ -175,11 +171,6 @@ export default class GameBoard extends Component {
         }));        
 
         this.startTimer();
-        
-        //AI move
-        if(this.props.gameSettings.gameType === "pve" && (this.state.turn % 2 === (2 - this.state.playerColor))){
-            this.makeAIMove();
-        }
     }
 
     makeAIMove = () => {
@@ -191,17 +182,15 @@ export default class GameBoard extends Component {
             turn: this.state.turn
         };
         
-        AbaloneClient.nextMove(packet).then(console.log);
+        let that = this;
         
-        let changeInfoArray;
-        if(this.state.curState[13] === 1) {
-            changeInfoArray = getChangeInfoArray(['13'], 3, this.state.boardArray);
-        } else {
-            changeInfoArray = getChangeInfoArray(['20'], 2, this.state.boardArray);
-        }
+        AbaloneClient.nextMove(packet).then(({action}) => {
+            const nextState = getNextStateByAIAction(this.state.curState, action);
+            that.updateBoardState(nextState);
+            console.log(action);
+        });
         
 
-        this.makeMove(changeInfoArray);
     }
 
     locationSelected = (location) => {
@@ -410,7 +399,7 @@ export default class GameBoard extends Component {
                                             color={this.state.curState[key]}
                                             cx={center.x}
                                             cy={center.y}
-                                            r="7"
+                                            r={circleRadius}
                                             fill={(this.state.curState[key] === 1) ? "url(#rgradwhite)" : "url(#rgradblack)"}
                                         />
                                         : null
