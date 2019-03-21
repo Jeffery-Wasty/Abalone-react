@@ -183,8 +183,14 @@ export default class GameBoard extends Component {
     }
 
     makeAIMove = () => {
-        const changeInfoArray = getChangeInfoArray([13], 4, this.state.boardArray);
-        console.log(changeInfoArray);
+        let changeInfoArray;
+        if(this.state.curState[13] === 1) {
+            changeInfoArray = getChangeInfoArray(['13'], 3, this.state.boardArray);
+        } else {
+            changeInfoArray = getChangeInfoArray(['20'], 2, this.state.boardArray);
+        }
+        
+
         this.makeMove(changeInfoArray);
     }
 

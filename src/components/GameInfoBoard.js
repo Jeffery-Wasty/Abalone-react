@@ -21,8 +21,8 @@ export default class GameInfoBoard extends Component {
     const whiteBkStyle = (this.props.gameInfo.turn % 2 === 0) ? {} : { opacity: 0.5 };
     const blackBkStyle = (this.props.gameInfo.turn % 2 === 1) ? {} : { opacity: 0.5 };
 
-    const whiteTimelineStyle = (this.props.gameInfo.turn % 2 === 0) ? { minHeight: '64vh', maxHeight: '64vh' } : { opacity: 0.5, minHeight: '64vh', maxHeight: '64vh' };
-    const blackTimelineStyle = (this.props.gameInfo.turn % 2 === 1) ? { minHeight: '64vh', maxHeight: '64vh' } : { opacity: 0.5, minHeight: '64vh', maxHeight: '64vh' };
+    const whiteTimelineStyle = (this.props.gameInfo.turn % 2 === 0) ? { minHeight: '60vh', maxHeight: '60vh' } : { opacity: 0.5, minHeight: '60vh', maxHeight: '60vh' };
+    const blackTimelineStyle = (this.props.gameInfo.turn % 2 === 1) ? { minHeight: '60vh', maxHeight: '60vh' } : { opacity: 0.5, minHeight: '60vh', maxHeight: '60vh' };
     const turnSuffix = `/ ${this.props.gameInfo.moveLimit}`;
     return (
       <div style={{ maxHeight: 600 }}>

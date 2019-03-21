@@ -173,7 +173,7 @@ export const isLegalMove = (selectedArray) => {
 
 export const moveMarble = (e, start, end) => {
     return new Promise((resolve) => {
-        const moves = 100;
+        const moves = 20;
         const distanceX = (start.x - end.x)/moves;    
         const distanceY = (start.y - end.y)/moves;
         let counter = 1;
