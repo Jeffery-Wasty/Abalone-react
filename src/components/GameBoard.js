@@ -26,6 +26,8 @@ export default class GameBoard extends Component {
             timeLeft: 0,
             pause: false,
             start: false,
+            whiteMoveHistory:[],
+            blackMoveHistory:[]
         }
 
     }
@@ -54,6 +56,10 @@ export default class GameBoard extends Component {
     }
 
     clickMarble = (e) => {
+        if(!this.state.start){
+            return;
+        }
+
         //black move in odd turn, white move in even turn
         if ((this.state.turn % 2 === 0 && e.target.getAttribute('color') === '2') ||
             (this.state.turn % 2 === 1 && e.target.getAttribute('color') === '1')) {
@@ -139,6 +145,18 @@ export default class GameBoard extends Component {
             element.setAttribute('cy', start.y);
         })
 
+        const action = "Test: Move A3 to A5 - 2s"
+
+        if(this.state.turn % 2 === 0){
+            this.setState(prevState => ({
+                whiteMoveHistory: [...prevState.whiteMoveHistory, action]          
+            }));            
+        } else {
+            this.setState(prevState => ({
+                blackMoveHistory: [...prevState.whiteMoveHistory, action]          
+            }));            
+        }
+
         if (this.state.clock) {
             clearInterval(this.state.clock);
         }
@@ -149,8 +167,10 @@ export default class GameBoard extends Component {
             timeLeft: this.props.gameSettings.timeLimit,
             progress: 100,
             pause: false,
-            turn: prevState.turn + 1
+            turn: prevState.turn + 1            
         }));
+
+        
 
         this.startTimer();
 
@@ -230,7 +250,9 @@ export default class GameBoard extends Component {
             turn: 1,
             progress: 100,
             pause: false,
-            start: false
+            start: false,
+            whiteMoveHistory: [],
+            blackMoveHistory: []
         })
     }
 

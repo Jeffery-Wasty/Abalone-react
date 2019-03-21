@@ -56,14 +56,9 @@ export default class GameInfoBoard extends Component {
 
             <Card style={blackTimelineStyle}>
               <Timeline>
-                <Timeline.Item>Move A1 to right - 2s</Timeline.Item>
-                <Timeline.Item>Move B3 to top left - 5s</Timeline.Item>
-                <Timeline.Item>Move D4 C4 B4 and push E4 F4 to top left - 10s</Timeline.Item>
-                <Timeline.Item>Move D3 C3 to left - 8s</Timeline.Item>
-                <Timeline.Item>Move A1 to right - 2s</Timeline.Item>
-                <Timeline.Item>Move B3 to top left - 5s</Timeline.Item>
-                <Timeline.Item>Move D4 C4 B4 and push E4 F4 to top left - 10s</Timeline.Item>
-                <Timeline.Item>Move D3 C3 to left - 8s</Timeline.Item>
+                {this.props.gameInfo.blackMoveHistory.map((history, key) => {
+                  return <Timeline.Item key={key}>{history}</Timeline.Item>
+                })}
               </Timeline>
             </Card>
 
@@ -90,12 +85,9 @@ export default class GameInfoBoard extends Component {
 
             <Card style={whiteTimelineStyle}>
               <Timeline >
-                <Timeline.Item>Move A1 to right - 3s</Timeline.Item>
-                <Timeline.Item>Move B3 to top left - 5s</Timeline.Item>
-                <Timeline.Item>Move D4 C4 B4 and push E4 F4 to top left - 10s</Timeline.Item>
-                <Timeline.Item>Move A1 to right - 3s</Timeline.Item>
-                <Timeline.Item>Move B3 to top left - 5s</Timeline.Item>
-                <Timeline.Item>Move D4 C4 B4 and push E4 F4 to top left - 10s</Timeline.Item>
+                {this.props.gameInfo.whiteMoveHistory.map((history, key) => {
+                  return <Timeline.Item key={key}>{history}</Timeline.Item>
+                })}
               </Timeline>
             </Card>
 
