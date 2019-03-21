@@ -6,12 +6,19 @@ const { Socket } = net;
 
 class AbaloneClient {
 
-    nextPlayerMove = async (moves) => {
-        moves = moves.join(',');
-        let response = await this.callServer('next-move', {moves});
+    nextMove = async (state, timeLimit, turnLimit, turn) => {
+        state = state.join(',');
+        let response = await this.callServer('next-move', {moves, timeLimit, turnLimit, turn});
         response.succeed = JSON.parse(response.succeed);
         return response;
     }
+
+    // nextPlayerMove = async (moves) => {
+    //     moves = moves.join(',');
+    //     let response = await this.callServer('next-move', {moves});
+    //     response.succeed = JSON.parse(response.succeed);
+    //     return response;
+    // }
 
     requestCurrentState = async () => {
         let response = await this.callServer('game-state');

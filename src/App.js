@@ -30,14 +30,6 @@ class App extends Component {
       ...initState
     })
     
-    // await AbaloneClient.newGame({
-    //   boardLayout,
-    //   gameMode: this.state.gameType,
-    //   playerColor: this.state.playerColor,
-    //   turnLimit: this.state.moveLimit,
-    //   timeLimit: this.state.timeLimit
-    // });
-
     this.closeSettings();
   }
 

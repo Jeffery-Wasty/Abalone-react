@@ -251,6 +251,7 @@ export default class GameBoard extends Component {
             progress: 100,
             pause: false,
             start: false,
+            timeLeft:0,
             whiteMoveHistory: [],
             blackMoveHistory: []
         })
