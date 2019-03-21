@@ -222,3 +222,19 @@ export const moveMarbles = (changeInfoArray) => {
 }
 
 
+
+export const getChangeInfoArray = (selectedHex, moveDirection, boardArray) => {
+    let changeInfoArray = getSelectedElements(selectedHex);
+
+    changeInfoArray.forEach((marble, index) => {
+        const destLocation = destTable[marble.location][moveDirection];
+        changeInfoArray[index].originLocation = marble.location;
+        changeInfoArray[index].destLocation = destLocation;
+        changeInfoArray[index].start = boardArray[marble.location];
+        changeInfoArray[index].end = boardArray[destLocation];
+        changeInfoArray[index].direction = moveDirection;
+    })
+
+    return changeInfoArray;
+}
+

@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import {
     isLegalGroup, generateBoardCoordArray, getHexCornerCoordinate,
-    moveMarbles, getSelectedElements, getMoveDirection, boardNameArray, getArrowSymbol
+    moveMarbles, getMoveDirection, boardNameArray, getArrowSymbol, getChangeInfoArray
 } from './Util';
-import { destTable } from './DestTable';
 // import AbaloneClient from '../utils/AbaloneClient';
 import { Button, Col, Progress, Row } from 'antd';
 import GameInfoBoard from './GameInfoBoard';
@@ -101,19 +100,9 @@ export default class GameBoard extends Component {
             }
 
             //save all moving info of selected marbles to an array
-            const changeInfoArray = getSelectedElements(this.state.selectedHex);
-
-            changeInfoArray.forEach((marble, index) => {
-                const destLocation = destTable[marble.location][moveDirection];
-                changeInfoArray[index].originLocation = marble.location;
-                changeInfoArray[index].destLocation = destLocation;
-                changeInfoArray[index].start = this.state.boardArray[marble.location];
-                changeInfoArray[index].end = this.state.boardArray[destLocation];
-                changeInfoArray[index].direction = moveDirection;
-            })
+            const changeInfoArray = getChangeInfoArray(this.state.selectedHex, moveDirection, this.state.boardArray);
 
             this.setState({ selectedHex: [] });
-
             this.makeMove(changeInfoArray);
         }
     }
@@ -186,7 +175,7 @@ export default class GameBoard extends Component {
         }));        
 
         this.startTimer();
-
+        
         //AI move
         if(this.props.gameSettings.gameType === "pve" && (this.state.turn % 2 === (2 - this.state.playerColor))){
             this.makeAIMove();
@@ -194,7 +183,9 @@ export default class GameBoard extends Component {
     }
 
     makeAIMove = () => {
-
+        const changeInfoArray = getChangeInfoArray([13], 4, this.state.boardArray);
+        console.log(changeInfoArray);
+        this.makeMove(changeInfoArray);
     }
 
     locationSelected = (location) => {
