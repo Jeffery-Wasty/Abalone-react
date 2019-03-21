@@ -3,7 +3,7 @@ import {
     isLegalGroup, generateBoardCoordArray, getHexCornerCoordinate,
     moveMarbles, getMoveDirection, boardNameArray, getArrowSymbol, getChangeInfoArray
 } from './Util';
-// import AbaloneClient from '../utils/AbaloneClient';
+import AbaloneClient from '../utils/AbaloneClient';
 import { Button, Col, Progress, Row } from 'antd';
 import GameInfoBoard from './GameInfoBoard';
 
@@ -183,6 +183,16 @@ export default class GameBoard extends Component {
     }
 
     makeAIMove = () => {
+        const { moveLimit, timeLimit } = this.props.gameSettings;
+        const packet = {
+            turnLimit: 5, // replace hardcoded value with moveLimit
+            timeLimit,
+            state: this.state.curState,
+            turn: this.state.turn
+        };
+        
+        AbaloneClient.nextMove(packet).then(console.log);
+        
         let changeInfoArray;
         if(this.state.curState[13] === 1) {
             changeInfoArray = getChangeInfoArray(['13'], 3, this.state.boardArray);

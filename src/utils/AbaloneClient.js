@@ -6,10 +6,10 @@ const { Socket } = net;
 
 class AbaloneClient {
 
-    nextMove = async (state, timeLimit, turnLimit, turn) => {
+    nextMove = async ({ state, timeLimit, turnLimit, turn }) => {
         state = state.join(',');
-        let response = await this.callServer('next-move', {moves, timeLimit, turnLimit, turn});
-        response.succeed = JSON.parse(response.succeed);
+        let response = await this.callServer('next-move', { state, timeLimit, turnLimit, turn });
+        response.action = JSON.parse(response.action);
         return response;
     }
 
@@ -20,16 +20,16 @@ class AbaloneClient {
     //     return response;
     // }
 
-    requestCurrentState = async () => {
-        let response = await this.callServer('game-state');
-        response.state = JSON.parse(response.state);
-        response.turn = parseInt(response.turn);
-        return response;
-    }
+    // requestCurrentState = async () => {
+    //     let response = await this.callServer('game-state');
+    //     response.state = JSON.parse(response.state);
+    //     response.turn = parseInt(response.turn);
+    //     return response;
+    // }
 
-    newGame = async ({ boardLayout, gameMode, playerColor, turnLimit, timeLimit }) => {
-        return await this.callServer('new-game', { boardLayout, gameMode, playerColor, turnLimit, timeLimit });
-    }
+    // newGame = async ({ boardLayout, gameMode, playerColor, turnLimit, timeLimit }) => {
+    //     return await this.callServer('new-game', { boardLayout, gameMode, playerColor, turnLimit, timeLimit });
+    // }
 
     constructor() {
         this.client = new Socket();
@@ -70,7 +70,8 @@ class AbaloneClient {
         return new Promise((resolve, reject) => {
             // add handler that resolve the returned data
             const handlerId = this.addHandler(endpoint, (res) => {
-                if (res.request_id === handlerId) {
+                // must use == here!!!
+                if (res.request_id == handlerId) {
                     delete res['request_id'];
                     resolve(res);
                     this.removeHandler(endpoint, handlerId);
