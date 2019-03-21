@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import {
     isLegalGroup, generateBoardCoordArray, getHexCornerCoordinate,
-    moveMarbles, getSelectedElements, getMoveDirection
+    moveMarbles, getSelectedElements, getMoveDirection, boardNameArray, getArrowSymbol
 } from './Util';
 import { destTable } from './DestTable';
 // import AbaloneClient from '../utils/AbaloneClient';
@@ -116,6 +116,25 @@ export default class GameBoard extends Component {
             //move all selected marbles
             await moveMarbles(changeInfoArray);
 
+            //update move history
+            let action = "";            
+            
+            changeInfoArray.forEach(element => {
+                action += boardNameArray[element.originLocation] + " ";
+            })
+
+            action  += getArrowSymbol(moveDirection) + " - Turn: " + Math.round(this.state.turn/2);
+
+            if(this.state.turn % 2 === 0){
+                this.setState(prevState => ({
+                    whiteMoveHistory: [...prevState.whiteMoveHistory, action]          
+                }));            
+            } else {
+                this.setState(prevState => ({
+                    blackMoveHistory: [...prevState.blackMoveHistory, action]          
+                }));            
+            }
+
             this.updateBoardState(changeInfoArray);
 
         }
@@ -144,18 +163,6 @@ export default class GameBoard extends Component {
             element.setAttribute('cx', start.x);
             element.setAttribute('cy', start.y);
         })
-
-        const action = "Test: Move A3 to A5 - 2s"
-
-        if(this.state.turn % 2 === 0){
-            this.setState(prevState => ({
-                whiteMoveHistory: [...prevState.whiteMoveHistory, action]          
-            }));            
-        } else {
-            this.setState(prevState => ({
-                blackMoveHistory: [...prevState.whiteMoveHistory, action]          
-            }));            
-        }
 
         if (this.state.clock) {
             clearInterval(this.state.clock);
