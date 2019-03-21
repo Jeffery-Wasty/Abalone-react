@@ -117,13 +117,14 @@ export default class GameBoard extends Component {
             await moveMarbles(changeInfoArray);
 
             //update move history
-            let action = "";            
+            let action = `Turn ${Math.round(this.state.turn/2)}: `;            
             
             changeInfoArray.forEach(element => {
                 action += boardNameArray[element.originLocation] + " ";
             })
 
-            action  += getArrowSymbol(moveDirection) + " - Turn: " + Math.round(this.state.turn/2);
+            action += getArrowSymbol(moveDirection);
+            action += ` - Time: ${Math.round(this.state.timeLimit - this.state.timeLeft)}s`;
 
             if(this.state.turn % 2 === 0){
                 this.setState(prevState => ({

@@ -6,35 +6,35 @@ export default class GameInfoBoard extends Component {
   //color white 1, black 2
   getTimer = (color) => {
     let timer = 0;
-    if(color === 1) {
-      if(this.props.gameInfo.turn % 2 === 0) {
-        timer = this.props.gameInfo.timeLeft 
-      } 
+    if (color === 1) {
+      if (this.props.gameInfo.turn % 2 === 0) {
+        timer = this.props.gameInfo.timeLeft
+      }
     } else {
-      if(this.props.gameInfo.turn % 2 === 1) {
-        timer = this.props.gameInfo.timeLeft 
-      } 
+      if (this.props.gameInfo.turn % 2 === 1) {
+        timer = this.props.gameInfo.timeLeft
+      }
     }
     return Math.round(timer * 100) / 100;
   }
   render() {
-    const whiteBkStyle = (this.props.gameInfo.turn % 2 === 0) ? {} : {backgroundColor: "#bdbdbd"};
-    const blackBkStyle = (this.props.gameInfo.turn % 2 === 1) ? {} : {backgroundColor: "#bdbdbd"};
+    const whiteBkStyle = (this.props.gameInfo.turn % 2 === 0) ? {} : { opacity: 0.5 };
+    const blackBkStyle = (this.props.gameInfo.turn % 2 === 1) ? {} : { opacity: 0.5 };
 
-    const whiteTimelineStyle = (this.props.gameInfo.turn % 2 === 0) ? {minHeight: 550} : {backgroundColor: "#bdbdbd", minHeight: 550};
-    const blackTimelineStyle = (this.props.gameInfo.turn % 2 === 1) ? {minHeight: 550} : {backgroundColor: "#bdbdbd", minHeight: 550};
+    const whiteTimelineStyle = (this.props.gameInfo.turn % 2 === 0) ? { minHeight: '64vh', maxHeight: '64vh' } : { opacity: 0.5, minHeight: '64vh', maxHeight: '64vh' };
+    const blackTimelineStyle = (this.props.gameInfo.turn % 2 === 1) ? { minHeight: '64vh', maxHeight: '64vh' } : { opacity: 0.5, minHeight: '64vh', maxHeight: '64vh' };
     const turnSuffix = `/ ${this.props.gameInfo.moveLimit}`;
     return (
       <div style={{ maxHeight: 600 }}>
-        
+
         <Row>
           <div style={{ margin: 20, float: "right" }}>
-            <Statistic value={Math.round(this.props.gameInfo.turn/2)} prefix="Turn: " suffix={turnSuffix} valueStyle={{ fontSize: 40, color: "#fafafa" }}/>
+            <Statistic value={Math.round(this.props.gameInfo.turn / 2)} prefix="Turn: " suffix={turnSuffix} valueStyle={{ fontSize: 40, color: "#fafafa" }} />
           </div>
         </Row>
 
         <Row gutter={16}>
-          
+
           <Col span={12}>
             <Card style={blackBkStyle} >
               <Row>
@@ -56,8 +56,10 @@ export default class GameInfoBoard extends Component {
 
             <Card style={blackTimelineStyle}>
               <Timeline>
-                {this.props.gameInfo.blackMoveHistory.map((history, key) => {
-                  return <Timeline.Item key={key}>{history}</Timeline.Item>
+                {this.props.gameInfo.blackMoveHistory.length && this.props.gameInfo.blackMoveHistory.map((history, key) => {
+                  return key === (this.props.gameInfo.blackMoveHistory.length - 1) ?
+                    <Timeline.Item key={key} color="green">{history}</Timeline.Item> :
+                    <Timeline.Item key={key} color="blue">{history}</Timeline.Item>
                 })}
               </Timeline>
             </Card>
@@ -84,9 +86,11 @@ export default class GameInfoBoard extends Component {
             </Card>
 
             <Card style={whiteTimelineStyle}>
-              <Timeline >
-                {this.props.gameInfo.whiteMoveHistory.map((history, key) => {
-                  return <Timeline.Item key={key}>{history}</Timeline.Item>
+              <Timeline>
+                {this.props.gameInfo.whiteMoveHistory.length && this.props.gameInfo.whiteMoveHistory.map((history, key) => {
+                  return key === (this.props.gameInfo.whiteMoveHistory.length - 1) ?
+                    <Timeline.Item key={key} color="green">{history}</Timeline.Item> :
+                    <Timeline.Item key={key} color="blue">{history}</Timeline.Item>
                 })}
               </Timeline>
             </Card>
