@@ -299,28 +299,27 @@ export default class GameBoard extends Component {
 
     render() {
 
+        const startIcon = this.state.start? (this.state.pause? "step-forward" : "pause-circle") : "caret-right";
+        const startClickFunction = this.state.start? this.pauseGame : this.startGame;
+
         return (
             <div>                
                 <Row>
                     <Col span={11} offset={1}>   
                         <div style={{ margin: 30 }}>
-                            <Row gutter={4}>                            
-                                <Col span={4}>
-                                    {this.state.start? <Button type="primary" size="large" icon="start" onClick={this.startGame} block disabled> Start </Button> :
-                                    <Button type="primary" size="large" icon="start" onClick={this.startGame} block> Start </Button>}
-                                </Col>
-                                <Col span={4}>
-                                    <Button type="primary" size="large" icon={this.state.pause? "caret-right" : "pause-circle"} onClick={this.pauseGame} block>
-                                        {this.state.pause? "Resume" : "Pause"}
+                            <Row gutter={4}>       
+                                <Col span={5} offset={1}>
+                                    <Button type="primary" size="large" icon={startIcon} onClick={startClickFunction} block>
+                                        {this.state.start? (this.state.pause? "Resume" : "Pause") : "Start"}
                                     </Button>
                                 </Col>
-                                <Col span={4}>
+                                <Col span={5}>
                                     <Button type="danger" size="large" icon="stop" onClick={this.stopGame} block> Stop </Button>
                                 </Col>
-                                <Col span={4}>
+                                <Col span={5}>
                                     <Button size="large" icon="rollback" onClick={this.resetGame} block> Reset </Button>
                                 </Col>
-                                <Col span={4}>
+                                <Col span={5}>
                                     <Button type="dashed" icon="backward" size="large" onClick={this.undoLastMove} block> Undo </Button>
                                 </Col>
                             </Row>
