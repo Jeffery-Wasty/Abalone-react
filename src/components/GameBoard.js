@@ -4,7 +4,7 @@ import {
     moveMarbles, getMoveDirection, boardNameArray, getArrowSymbol, 
     getChangeInfoArray, getNextStateByAIAction, getNextState
 } from './Util';
-import AbaloneClient from '../utils/AbaloneClient';
+// import AbaloneClient from '../utils/AbaloneClient';
 import { Button, Col, Progress, Row } from 'antd';
 import GameInfoBoard from './GameInfoBoard';
 
@@ -174,21 +174,21 @@ export default class GameBoard extends Component {
     }
 
     makeAIMove = () => {
-        const { moveLimit, timeLimit } = this.props.gameSettings;
-        const packet = {
-            turnLimit: 5, // replace hardcoded value with moveLimit
-            timeLimit,
-            state: this.state.curState,
-            turn: this.state.turn
-        };
+        // const { moveLimit, timeLimit } = this.props.gameSettings;
+        // const packet = {
+        //     turnLimit: 5, // replace hardcoded value with moveLimit
+        //     timeLimit,
+        //     state: this.state.curState,
+        //     turn: this.state.turn
+        // };
         
-        let that = this;
+        // let that = this;
         
-        AbaloneClient.nextMove(packet).then(({action}) => {
-            const nextState = getNextStateByAIAction(this.state.curState, action);
-            that.updateBoardState(nextState);
-            console.log(action);
-        });
+        // AbaloneClient.nextMove(packet).then(({action}) => {
+        //     const nextState = getNextStateByAIAction(this.state.curState, action);
+        //     that.updateBoardState(nextState);
+        //     console.log(action);
+        // });
         
 
     }
@@ -207,6 +207,8 @@ export default class GameBoard extends Component {
         if (!this.state.selectedHex.length) {
             return;
         }
+
+        e.target.
 
         const start = this.state.boardArray[this.state.selectedHex[0]];
         const end = this.state.boardArray[e.target.getAttribute('location')];
@@ -269,6 +271,7 @@ export default class GameBoard extends Component {
             pause: false,
             start: false,
             timeLeft:0,
+            selectedHex:[],
             whiteMoveHistory: [],
             blackMoveHistory: []
         })

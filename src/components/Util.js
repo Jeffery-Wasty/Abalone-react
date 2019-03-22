@@ -134,18 +134,15 @@ export const isLegalGroup = (selectedArray, newElement) => {
         for (let i = 0; i < 6; i++) {
             if(parseInt(destTable[selectedArray[0]][i]) === parseInt(newElement)) {
                 valid = true;
-                validArray = selectedArray[0] > newElement ? [newElement, selectedArray[0]] : [selectedArray[0], newElement];
+                validArray = parseInt(selectedArray[0]) > parseInt(newElement)? [newElement, selectedArray[0]] : [selectedArray[0], newElement];
             } else if(parseInt(destTable[selectedArray[0]][i]) !== -1 && parseInt(destTable[destTable[selectedArray[0]][i]][i]) === parseInt(newElement)){
                 valid = true;
-                validArray = selectedArray[0] > newElement? [newElement, destTable[selectedArray[0]][i].toString(),selectedArray[0]] 
+                validArray = parseInt(selectedArray[0]) > parseInt(newElement)?  [newElement, destTable[selectedArray[0]][i].toString(),selectedArray[0]]
                                                         : [selectedArray[0], destTable[selectedArray[0]][i].toString(),newElement];
             }
         }
-        
-
-
     } else if (selectedArray.length === 2) {
-        if (selectedArray[0] > newElement) {
+        if (parseInt(selectedArray[0]) > parseInt(newElement)) {
             destTable[selectedArray[1]].forEach((location, index) => {
                 if (parseInt(location) === parseInt(selectedArray[0]) && parseInt(destTable[selectedArray[0]][index]) === parseInt(newElement)) {
                     valid = true;
