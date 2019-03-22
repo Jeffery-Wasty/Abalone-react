@@ -1,15 +1,14 @@
 import React, { Component } from 'react';
 import {
     isLegalGroup, generateBoardCoordArray, getHexCornerCoordinate,
-    moveMarbles, getMoveDirection, boardNameArray, getArrowSymbol, 
-    getChangeInfoArray, getNextStateByAIAction, getNextState
+    moveMarbles, getMoveDirection, boardNameArray, getArrowSymbol, isLegalMove,
+    getNextStateByAIAction, getNextState, generateSupportlineTexts, 
 } from './Util';
 // import AbaloneClient from '../utils/AbaloneClient';
 import { Button, Col, Progress, Row } from 'antd';
 import GameInfoBoard from './GameInfoBoard';
-import {destTable} from './DestTable';
 
-const start_point = { x: 75, y: 25 };
+const start_point = { x: 75, y: 15 };
 const hexSize = 13;
 const circleRadius = 10;
 
@@ -65,7 +64,7 @@ export default class GameBoard extends Component {
         }
 
         //black move in odd turn, white move in even turn
-        if (this.state.turn % 2 === (2 - parseInt(e.target.getAttribute('color')))){
+        if (!this.state.changeInfoArray && this.state.turn % 2 === (2 - parseInt(e.target.getAttribute('color')))){
             return;
         }
 
@@ -79,9 +78,11 @@ export default class GameBoard extends Component {
         if (selected) {
             this.setState({ selectedHex: [] });
         } else {
-
             if (this.state.supportLine.length) {
-                //TODO: only move when there is supportline
+                //push marble
+                this.setState({ selectedHex: [] });
+                this.makeMove(this.state.changeInfoArray);
+
             } else {
                 if (this.state.selectedHex.length >= 3) {
                     this.setState({ selectedHex: [e.target.getAttribute('location')] });
@@ -95,26 +96,56 @@ export default class GameBoard extends Component {
 
     clickHex = (e) => {
         if (this.state.supportLine.length) {
-
-            //calculate direction
-            const oldLocation = this.state.selectedHex[0];
-            const newLocation = e.target.getAttribute('location');
-            const moveDirection = getMoveDirection(oldLocation, newLocation);
-
-            if (moveDirection === -1) {
-                return;
-            }
-
-            //save all moving info of selected marbles to an array
-            const changeInfoArray = getChangeInfoArray(this.state.selectedHex, moveDirection, this.state.boardArray);
-
             this.setState({ selectedHex: [] });
-            this.makeMove(changeInfoArray);
+            this.makeMove(this.state.changeInfoArray);         
         }
     }
 
+    mouseOverHex = (e) => {
+        if (!this.state.selectedHex.length) {
+            return;
+        }        
+
+        const moveDirection = getMoveDirection(this.state.selectedHex, e.target.getAttribute('location'));
+
+        if(moveDirection !== -1) {
+            const changeInfoArray = isLegalMove(this.state.selectedHex, moveDirection, this.state.boardArray, this.state.curState);
+
+            if(changeInfoArray) {
+                const points = generateSupportlineTexts(this.state.selectedHex, this.state.boardArray, moveDirection);    
+                this.showSupportLine(points, changeInfoArray);
+            }           
+            
+        }
+    }
+
+
+
+    mouseOutHex = (e) => {
+        this.hideSupportLine();
+    }
+
+    showSupportLine = (points, changeInfoArray) => {
+
+        if(!points.length){
+            return;
+        } 
+
+        this.setState({
+            supportLine: points,
+            changeInfoArray
+        })
+    }
+
+    hideSupportLine = () => {
+        this.setState({
+            supportLine: [],
+            changeInfoArray: null
+        })
+    }
+
     makeMove = async (changeInfoArray) => {
-        if(!changeInfoArray.length){
+        if(!changeInfoArray || !changeInfoArray.length){
             return;
         }
 
@@ -201,50 +232,7 @@ export default class GameBoard extends Component {
             })
         }
         return found;
-    }
-
-    mouseOverHex = (e) => {
-        if (!this.state.selectedHex.length) {
-            return;
-        }        
-
-        const moveDirection = getMoveDirection(this.state.selectedHex[0], e.target.getAttribute('location'));
-
-        if(moveDirection === -1) {
-            return;
-        }
-
-        this.state.selectedHex.forEach(hex => {
-            const start = this.state.boardArray[hex];
-            const end = this.state.boardArray[destTable[hex][moveDirection]]
-            this.showSupportLine(start, end);
-        })
-
-    }
-
-    mouseOutHex = (e) => {
-        this.hideSupportLine();
-    }
-
-    showSupportLine = (start, end) => {
-        const point = `${start.x},${start.y} ${end.x},${end.y}`;
-
-        if(!this.state.supportLine.length) {
-            this.setState({
-                supportLine: [point]
-            })
-        } else {
-            this.setState(prevState => ({
-                supportLine: [...prevState.supportLine, point],
-            }))
-        }
-    }
-
-    hideSupportLine = () => {
-        this.setState({
-            supportLine: [],
-        })
-    }
+    }   
 
     startGame = () => {        
         this.setState({
@@ -359,16 +347,16 @@ export default class GameBoard extends Component {
                                     <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5"
                                         markerWidth="3" markerHeight="3"
                                         orient="auto-start-reverse">
-                                        <path d="M 0 0 L 10 5 L 0 10 z" fill="#fff176" />
+                                        <path d="M 0 0 L 10 5 L 0 10 z" fill="#ffee58" />
                                     </marker>
                                 </defs>
 
-                                <defs>
+                                {/* <defs>
                                     <pattern id="img1" patternUnits="userSpaceOnUse" width="100%" height="650" >
                                         <image xlinkHref="https://www.primary-school-resources.com/wp-content/uploads/2014/11/Wooden-Background-vertical.jpg" x="-30" y="-30"
-                                            width="400" height="280" opacity="0"/>
+                                            width="400" height="280" />
                                     </pattern>
-                                </defs>
+                                </defs> */}
 
                                 <defs>
                                     <radialGradient id="rgradwhite" gradientUnits="objectBoundingBox" fx="30%" fy="30%" >
@@ -385,8 +373,6 @@ export default class GameBoard extends Component {
                                     </radialGradient>
                                 </defs>
 
-                                {/* <rect x="-1" y="-1" width="350" height="320" stroke="#c2c2c2" fill="url(#img1)" /> */}
-
                                 {this.state.boardArray.map((center, key) =>
                                     <polygon
                                         key={key}
@@ -394,7 +380,7 @@ export default class GameBoard extends Component {
                                         cx={center.x}
                                         cy={center.y}
                                         points={getHexCornerCoordinate(center, hexSize)}
-                                        fill={this.locationSelected(key) ? '#d50000' : '#fa5'}
+                                        fill={this.locationSelected(key) ? '#a30000' : '#f57c00'}
                                         stroke="#000"
                                         onMouseOver={this.mouseOverHex}
                                         onMouseOut={this.mouseOutHex}
@@ -407,6 +393,8 @@ export default class GameBoard extends Component {
                                         <circle
                                             key={key}
                                             onClick={this.clickMarble}
+                                            onMouseOver={this.mouseOverHex}
+                                            onMouseOut={this.mouseOutHex}
                                             location={key}
                                             color={this.state.curState[key]}
                                             cx={center.x}
@@ -439,7 +427,7 @@ export default class GameBoard extends Component {
 
                                 {this.state.supportLine.length > 2 ? 
                                     <polyline
-                                        points={this.state.supportLine[1]}
+                                        points={this.state.supportLine[2]}
                                         stroke="#fff176"
                                         strokeWidth="2"
                                         strokeDasharray="3,3"

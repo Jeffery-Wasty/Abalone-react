@@ -77,7 +77,7 @@ class App extends Component {
               <Settings startGame={this.startGame} />
             </Modal>    
           </div> : 
-          <div style={{height: '100vh', backgroundImage: `url(${this.state.gameType==="pvp"? gamePic1 : gamePic})`, backgroundRepeat: 'no-repeat', backgroundSize: 'cover'}}>    
+          <div style={{height: '100vh', backgroundImage: `url(${this.state.gameType==="pvp"? gamePic : gamePic1})`, backgroundRepeat: 'no-repeat', backgroundSize: 'cover'}}>    
               <GameBoard 
                 boardInitState={getInitialState(this.state.boardInitState)} 
                 stopGame={this.stopGame}
