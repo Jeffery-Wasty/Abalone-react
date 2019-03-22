@@ -70,7 +70,7 @@ export default class GameBoard extends Component {
         }
 
         //AI turn
-        if (this.props.gameSettings.gameType === "pve" && this.props.gameSettings.playerColor !== parseInt(e.target.getAttribute('color'))) {
+        if (!this.state.changeInfoArray && this.props.gameSettings.gameType === "pve" && this.props.gameSettings.playerColor !== parseInt(e.target.getAttribute('color'))) {
             return;
         }
 
