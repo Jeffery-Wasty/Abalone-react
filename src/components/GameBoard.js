@@ -7,6 +7,7 @@ import {
 // import AbaloneClient from '../utils/AbaloneClient';
 import { Button, Col, Progress, Row } from 'antd';
 import GameInfoBoard from './GameInfoBoard';
+import {destTable} from './DestTable';
 
 const start_point = { x: 75, y: 25 };
 const hexSize = 13;
@@ -18,8 +19,7 @@ export default class GameBoard extends Component {
         super(props);
         this.state = {
             selectedHex: [],
-            supportLine: "",
-            supportLineVisible: false,
+            supportLine: [],
             curState: [],
             lastState:[],
             stateOption: 1,
@@ -80,7 +80,7 @@ export default class GameBoard extends Component {
             this.setState({ selectedHex: [] });
         } else {
 
-            if (this.state.supportLineVisible) {
+            if (this.state.supportLine.length) {
                 //TODO: only move when there is supportline
             } else {
                 if (this.state.selectedHex.length >= 3) {
@@ -94,7 +94,7 @@ export default class GameBoard extends Component {
     }
 
     clickHex = (e) => {
-        if (this.state.supportLineVisible) {
+        if (this.state.supportLine.length) {
 
             //calculate direction
             const oldLocation = this.state.selectedHex[0];
@@ -206,14 +206,19 @@ export default class GameBoard extends Component {
     mouseOverHex = (e) => {
         if (!this.state.selectedHex.length) {
             return;
+        }        
+
+        const moveDirection = getMoveDirection(this.state.selectedHex[0], e.target.getAttribute('location'));
+
+        if(moveDirection === -1) {
+            return;
         }
 
-        e.target.
-
-        const start = this.state.boardArray[this.state.selectedHex[0]];
-        const end = this.state.boardArray[e.target.getAttribute('location')];
-
-        this.showSupportLine(start, end, true);
+        this.state.selectedHex.forEach(hex => {
+            const start = this.state.boardArray[hex];
+            const end = this.state.boardArray[destTable[hex][moveDirection]]
+            this.showSupportLine(start, end);
+        })
 
     }
 
@@ -221,19 +226,23 @@ export default class GameBoard extends Component {
         this.hideSupportLine();
     }
 
-    showSupportLine = (start, end, visible) => {
-        const points = `${start.x},${start.y} ${end.x},${end.y}`;
+    showSupportLine = (start, end) => {
+        const point = `${start.x},${start.y} ${end.x},${end.y}`;
 
-        this.setState({
-            supportLine: points,
-            supportLineVisible: visible
-        })
+        if(!this.state.supportLine.length) {
+            this.setState({
+                supportLine: [point]
+            })
+        } else {
+            this.setState(prevState => ({
+                supportLine: [...prevState.supportLine, point],
+            }))
+        }
     }
 
     hideSupportLine = () => {
         this.setState({
-            supportLine: "",
-            supportLineVisible: false
+            supportLine: [],
         })
     }
 
@@ -345,7 +354,7 @@ export default class GameBoard extends Component {
                             </Row>
                         </div>       
                         <div>
-                            <svg id="test-polygon" viewBox="0 0 240 200">
+                            <svg id="test-polygon" viewBox="0 0 240 200" style={{transform:'perspective(1000px) rotateX(15deg)'}}>
                                 <defs>
                                     <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5"
                                         markerWidth="3" markerHeight="3"
@@ -355,28 +364,28 @@ export default class GameBoard extends Component {
                                 </defs>
 
                                 <defs>
-                                    <pattern id="img1" patternUnits="userSpaceOnUse" width="100%" height="650">
+                                    <pattern id="img1" patternUnits="userSpaceOnUse" width="100%" height="650" >
                                         <image xlinkHref="https://www.primary-school-resources.com/wp-content/uploads/2014/11/Wooden-Background-vertical.jpg" x="-30" y="-30"
-                                            width="400" height="280" />
+                                            width="400" height="280" opacity="0"/>
                                     </pattern>
-
                                 </defs>
 
                                 <defs>
-                                    <radialGradient id="rgradwhite" cx="50%" cy="50%" r="75%" >
-                                        <stop offset="0%" style={{ stopColor: "rgb(255,255,255)", stopOpacity: "1" }} />
-                                        <stop offset="50%" style={{ stopColor: "rgb(255,255,255)", stopOpacity: "1" }} />
-                                        <stop offset="100%" style={{ stopColor: "rgb(0,0,0)", stopOpacity: "1" }} />
+                                    <radialGradient id="rgradwhite" gradientUnits="objectBoundingBox" fx="30%" fy="30%" >
+                                        <stop offset="0%" style={{ stopColor: "rgb(255,255,255)"}} />
+                                        <stop offset="85%" style={{ stopColor: "#fafafa"}} />
+                                        <stop offset="100%" style={{ stopColor: "rgb(0,0,0)", }} />
                                     </radialGradient>
 
-                                    <radialGradient id="rgradblack" cx="50%" cy="50%" r="75%" >
-                                        <stop offset="0%" style={{ stopColor: "rgb(0,0,0)", stopOpacity: "1" }} />
-                                        <stop offset="50%" style={{ stopColor: "rgb(0,0,0)", stopOpacity: "1" }} />
-                                        <stop offset="100%" style={{ stopColor: "rgb(255,255,255)", stopOpacity: "1" }} />
+                                    <radialGradient id="rgradblack" gradientUnits="objectBoundingBox" fx="30%" fy="30%" >
+                                        <stop offset="0%" style={{ stopColor: "#FFF", stopOpacity: "0.5" }} />
+                                        <stop offset="40%" style={{ stopColor: "#000)"}} />
+                                        <stop offset="80%" style={{ stopColor: "#000)"}} />
+                                        <stop offset="100%" style={{ stopColor: "#212121"}} />
                                     </radialGradient>
                                 </defs>
 
-                                <rect x="0" y="0" width="350" height="320" stroke="#c2c2c2" fill="url(#img1)" />
+                                {/* <rect x="-1" y="-1" width="350" height="320" stroke="#c2c2c2" fill="url(#img1)" /> */}
 
                                 {this.state.boardArray.map((center, key) =>
                                     <polygon
@@ -408,14 +417,36 @@ export default class GameBoard extends Component {
                                         : null
                                 )}
 
-                                <polyline
-                                    style={{ visibility: this.state.supportLineVisible }}
-                                    points={this.state.supportLine}
-                                    stroke="#fff176"
-                                    strokeWidth="2"
-                                    strokeDasharray="3,3"
-                                    markerEnd="url(#arrow)"
-                                />
+                                {this.state.supportLine.length ? 
+                                    <polyline
+                                        points={this.state.supportLine[0]}
+                                        stroke="#fff176"
+                                        strokeWidth="2"
+                                        strokeDasharray="3,3"
+                                        markerEnd="url(#arrow)"
+                                    /> : null 
+                                }
+
+                                {this.state.supportLine.length > 1 ? 
+                                    <polyline
+                                        points={this.state.supportLine[1]}
+                                        stroke="#fff176"
+                                        strokeWidth="2"
+                                        strokeDasharray="3,3"
+                                        markerEnd="url(#arrow)"
+                                    /> : null 
+                                }
+
+                                {this.state.supportLine.length > 2 ? 
+                                    <polyline
+                                        points={this.state.supportLine[1]}
+                                        stroke="#fff176"
+                                        strokeWidth="2"
+                                        strokeDasharray="3,3"
+                                        markerEnd="url(#arrow)"
+                                    /> : null 
+                                }
+
                             </svg>
                         </div>
 
