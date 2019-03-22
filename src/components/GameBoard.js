@@ -237,7 +237,7 @@ export default class GameBoard extends Component {
     }   
 
     startGame = () => { 
-        if(!AbaloneClient.connected){
+        if(!AbaloneClient.connected && this.state.gameType === "pve"){
             this.setState({ serverConfirmVisible: true })
         } else {
             this.setState({
