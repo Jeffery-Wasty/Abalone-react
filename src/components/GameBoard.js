@@ -8,9 +8,9 @@ import {
 import { Button, Col, Progress, Row } from 'antd';
 import GameInfoBoard from './GameInfoBoard';
 
-const start_point = { x: 75, y: 15 };
-const hexSize = 13;
-const circleRadius = 10;
+const start_point = { x: 75, y: 25 };
+const hexSize = 12;
+const circleRadius = 9;
 
 export default class GameBoard extends Component {
 
@@ -342,7 +342,7 @@ export default class GameBoard extends Component {
                             </Row>
                         </div>       
                         <div>
-                            <svg id="test-polygon" viewBox="0 0 240 200" style={{transform:'perspective(1000px) rotateX(15deg)'}}>
+                            <svg id="test-polygon" viewBox="0 0 240 200" style={{transform:'perspective(1000px) rotateX(10deg)'}}>
                                 <defs>
                                     <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5"
                                         markerWidth="3" markerHeight="3"
