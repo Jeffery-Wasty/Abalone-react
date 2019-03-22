@@ -80,7 +80,7 @@ export default class GameBoard extends Component {
         } else {
             if (this.state.supportLine.length) {
                 //push marble
-                this.setState({ selectedHex: [] });
+                this.setState({ selectedHex: [], supportLine: [] });
                 this.makeMove(this.state.changeInfoArray);
 
             } else {
@@ -96,7 +96,8 @@ export default class GameBoard extends Component {
 
     clickHex = (e) => {
         if (this.state.supportLine.length) {
-            this.setState({ selectedHex: [] });
+            //move marble
+            this.setState({ selectedHex: [], supportLine: [] });
             this.makeMove(this.state.changeInfoArray);         
         }
     }
