@@ -4,8 +4,8 @@ import {
     moveMarbles, getMoveDirection, boardNameArray, getArrowSymbol, isLegalMove,
     getNextStateByAIAction, getNextState, generateSupportlineTexts, 
 } from './Util';
-// import AbaloneClient from '../utils/AbaloneClient';
-import { Button, Col, Progress, Row } from 'antd';
+import AbaloneClient from '../utils/AbaloneClient';
+import { Button, Col, Progress, Row, Modal } from 'antd';
 import GameInfoBoard from './GameInfoBoard';
 
 const start_point = { x: 75, y: 25 };
@@ -27,7 +27,8 @@ export default class GameBoard extends Component {
             pause: false,
             start: false,
             whiteMoveHistory:[],
-            blackMoveHistory:[]
+            blackMoveHistory:[],
+            serverConfirmVisible: false
         }
 
     }
@@ -206,21 +207,21 @@ export default class GameBoard extends Component {
     }
 
     makeAIMove = () => {
-        // const { moveLimit, timeLimit } = this.props.gameSettings;
-        // const packet = {
-        //     turnLimit: 5, // replace hardcoded value with moveLimit
-        //     timeLimit,
-        //     state: this.state.curState,
-        //     turn: this.state.turn
-        // };
+        const { moveLimit, timeLimit } = this.props.gameSettings;
+        const packet = {
+            turnLimit: moveLimit, // replace hardcoded value with moveLimit
+            timeLimit,
+            state: this.state.curState,
+            turn: this.state.turn
+        };
         
-        // let that = this;
+        let that = this;
         
-        // AbaloneClient.nextMove(packet).then(({action}) => {
-        //     const nextState = getNextStateByAIAction(this.state.curState, action);
-        //     that.updateBoardState(nextState);
-        //     console.log(action);
-        // });
+        AbaloneClient.nextMove(packet).then(({action}) => {
+            const nextState = getNextStateByAIAction(this.state.curState, action);
+            that.updateBoardState(nextState);
+            console.log(action);
+        });
         
 
     }
@@ -235,13 +236,17 @@ export default class GameBoard extends Component {
         return found;
     }   
 
-    startGame = () => {        
-        this.setState({
-            start: true,
-            timeLeft: this.props.gameSettings.timeLimit
-        })
-
-        this.startTimer();
+    startGame = () => { 
+        if(!AbaloneClient.connected){
+            this.setState({ serverConfirmVisible: true })
+        } else {
+            this.setState({
+                start: true,
+                timeLeft: this.props.gameSettings.timeLimit
+            })
+            
+            this.startTimer();
+        } 
     }
 
     pauseGame = () => {
@@ -313,6 +318,16 @@ export default class GameBoard extends Component {
         this.setState({
             clock
         })
+    }
+    
+    connectServer = async () => {
+        this.closeServerConfirmBox();
+        await AbaloneClient.connect();
+        this.startGame();
+    }
+
+    closeServerConfirmBox = () => {
+        this.setState({ serverConfirmVisible: false })
     }
 
     render() {
@@ -447,6 +462,17 @@ export default class GameBoard extends Component {
                         <GameInfoBoard gameInfo={this.state} />
                     </Col>
                 </Row>
+
+                <Modal
+                    title="Server Disconnected"
+                    visible={this.state.serverConfirmVisible}
+                    onOk={this.connectServer}
+                    onCancel={this.closeServerConfirmBox}
+                    okText="Reconnect"
+                    cancelText="Cancel"
+                    >
+                    Server disconnected. Do you want to re-connect?
+                </Modal>
             </div>
         )
     }

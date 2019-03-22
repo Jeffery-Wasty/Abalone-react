@@ -1,14 +1,26 @@
 const electron = window.require('electron');
 const net = electron.remote.require('net');
 
-const { Socket } = net;
+const {
+    Socket
+} = net;
 
 
 class AbaloneClient {
 
-    nextMove = async ({ state, timeLimit, turnLimit, turn }) => {
+    nextMove = async ({
+        state,
+        timeLimit,
+        turnLimit,
+        turn
+    }) => {
         state = state.join(',');
-        let response = await this.callServer('next-move', { state, timeLimit, turnLimit, turn });
+        let response = await this.callServer('next-move', {
+            state,
+            timeLimit,
+            turnLimit,
+            turn
+        });
         response.action = JSON.parse(response.action);
         return response;
     }
@@ -31,39 +43,46 @@ class AbaloneClient {
     //     return await this.callServer('new-game', { boardLayout, gameMode, playerColor, turnLimit, timeLimit });
     // }
 
-    constructor() {
-        this.client = new Socket();
-        this.connected = false;
-        this.handlerId = 0;
-        this.responseHandlers = {};
-
-        this.client.connect(1337, 'localhost', () => {
-            this.connected = true;
-        });
-
-        this.client.on('close', () => {
+    connect = () => {
+        return new Promise((resolve) => {
+            this.client = new Socket();
             this.connected = false;
-        });
+            this.handlerId = 0;
+            this.responseHandlers = {};
 
-        this.client.on('data', (data) => {
-            const { endpoint, response } = this.preprocessResponse(data.toString());
-            const handlers = this.responseHandlers[endpoint];
-            if (response.error) {
-                throw new Error(endpoint + ": " + response.error);
-            }
-            if (handlers) {
-                for (const handler of Object.values(handlers)) {
-                    handler(response);
+            this.client.connect(1337, 'localhost', () => {
+                resolve();
+                this.connected = true;
+            });
+
+            this.client.on('close', () => {
+                this.connected = false;
+            });
+
+            this.client.on('data', (data) => {
+                const {
+                    endpoint,
+                    response
+                } = this.preprocessResponse(data.toString());
+                const handlers = this.responseHandlers[endpoint];
+                if (response.error) {
+                    throw new Error(endpoint + ": " + response.error);
                 }
-            } else {
-                console.warn('No handler attached for ' + endpoint);
-                console.warn(response);
+                if (handlers) {
+                    for (const handler of Object.values(handlers)) {
+                        handler(response);
+                    }
+                } else {
+                    console.warn('No handler attached for ' + endpoint);
+                    console.warn(response);
+                }
+            })
+
+            window.onbeforeunload = () => {
+                this.close();
             }
         })
 
-        window.onbeforeunload = () => {
-            this.close();
-        }
     }
 
     callServer = async (endpoint, data) => {
@@ -99,7 +118,10 @@ class AbaloneClient {
         for (const [key, value] of params.entries()) {
             response[key] = value;
         }
-        return { endpoint, response };
+        return {
+            endpoint,
+            response
+        };
     }
 
     addHandler = (endpoint, handler) => {
