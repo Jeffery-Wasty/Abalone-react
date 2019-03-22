@@ -2,20 +2,20 @@ import { destTable } from './DestTable';
 
 
 export const boardNameArray = [
-    'I5','I6','I7','I8','I9',
-    'H4','H5','H6','H7','H8','H9',
-    'G3','G4','G5','G6','G7','G8','G9',
-    'F2','F3','F4','F5','F6','F7','F8','F9',
-    'E1','E2','E3','E4','E5','E6','E7','E8','E9',
-    'D1','D2','D3','D4','D5','D6','D7','D8',
-    'C1','C2','C3','C4','C5','C6','C7',
-    'B1','B2','B3','B4','B5','B6',
-    'A1','A2','A3','A4','A5'
+    'I5', 'I6', 'I7', 'I8', 'I9',
+    'H4', 'H5', 'H6', 'H7', 'H8', 'H9',
+    'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'G9',
+    'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9',
+    'E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7', 'E8', 'E9',
+    'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8',
+    'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7',
+    'B1', 'B2', 'B3', 'B4', 'B5', 'B6',
+    'A1', 'A2', 'A3', 'A4', 'A5'
 ]
 
 export const getArrowSymbol = (direction) => {
     let symbol;
-    switch(direction){
+    switch (direction) {
         case 0:
             symbol = "←";
             break;
@@ -99,29 +99,26 @@ export const Point = (x, y) => {
     return { x: x, y: y }
 }
 
-export const getSelectedElements = (selectedArray) => {
-    let selectedMarbleArray = [];
+export const getMoveDirection = (selectedHex, targetLocation) => {
 
-    document.querySelectorAll('circle').forEach((e)=> {  
-        if(selectedArray.length >=1 && e.getAttribute('location') === selectedArray[0]){
-            selectedMarbleArray.push({index: 0, element: e, location: selectedArray[0]})
-        } else if (selectedArray.length >=2 && e.getAttribute('location') === selectedArray[1]) {
-            selectedMarbleArray.push({index: 1, element: e, location: selectedArray[1]})
-        } else if (selectedArray.length >=3 && e.getAttribute('location') === selectedArray[2]) {
-            selectedMarbleArray.push({index: 2, element: e, location: selectedArray[2]})
+    let moveDirection = -1;
+
+    for (let i = 0; i < selectedHex.length; i++) {
+        let tempDirection = -1;
+
+        for (let j = 0; j < 6; j++) {
+            if (parseInt(destTable[selectedHex[i]][j]) === parseInt(targetLocation)) {
+                tempDirection = j
+            }
         }
-    })
 
-    return selectedMarbleArray;
-}
-
-export const getMoveDirection = (oldLocation, newLocation) => {
-    for(let i=0; i< 6; i++){
-        if(parseInt(destTable[oldLocation][i]) === parseInt(newLocation)){
-            return i
+        if (tempDirection !== -1) {
+            moveDirection = tempDirection;
+            break;
         }
     }
-    return -1;
+
+    return moveDirection;
 }
 
 export const isLegalGroup = (selectedArray, newElement) => {
@@ -132,13 +129,13 @@ export const isLegalGroup = (selectedArray, newElement) => {
         validArray = [newElement];
     } else if (selectedArray.length === 1) {
         for (let i = 0; i < 6; i++) {
-            if(parseInt(destTable[selectedArray[0]][i]) === parseInt(newElement)) {
+            if (parseInt(destTable[selectedArray[0]][i]) === parseInt(newElement)) {
                 valid = true;
-                validArray = parseInt(selectedArray[0]) > parseInt(newElement)? [newElement, selectedArray[0]] : [selectedArray[0], newElement];
-            } else if(parseInt(destTable[selectedArray[0]][i]) !== -1 && parseInt(destTable[destTable[selectedArray[0]][i]][i]) === parseInt(newElement)){
+                validArray = parseInt(selectedArray[0]) > parseInt(newElement) ? [newElement, selectedArray[0]] : [selectedArray[0], newElement];
+            } else if (parseInt(destTable[selectedArray[0]][i]) !== -1 && parseInt(destTable[destTable[selectedArray[0]][i]][i]) === parseInt(newElement)) {
                 valid = true;
-                validArray = parseInt(selectedArray[0]) > parseInt(newElement)?  [newElement, destTable[selectedArray[0]][i].toString(),selectedArray[0]]
-                                                        : [selectedArray[0], destTable[selectedArray[0]][i].toString(),newElement];
+                validArray = parseInt(selectedArray[0]) > parseInt(newElement) ? [newElement, destTable[selectedArray[0]][i].toString(), selectedArray[0]]
+                    : [selectedArray[0], destTable[selectedArray[0]][i].toString(), newElement];
             }
         }
     } else if (selectedArray.length === 2) {
@@ -163,50 +160,45 @@ export const isLegalGroup = (selectedArray, newElement) => {
 }
 
 
-
-export const isLegalMove = (selectedArray) => {    
-
-}
-
 export const moveMarble = (e, start, end) => {
     return new Promise((resolve) => {
         const moves = 20;
-        const distanceX = (start.x - end.x)/moves;    
-        const distanceY = (start.y - end.y)/moves;
+        const distanceX = (start.x - end.x) / moves;
+        const distanceY = (start.y - end.y) / moves;
         let counter = 1;
 
         let clock = setInterval(() => {
             e.setAttribute('cx', start.x - counter * distanceX);
             e.setAttribute('cy', start.y - counter * distanceY);
-            if(counter >= moves){
+            if (counter >= moves) {
                 clearInterval(clock);
                 resolve("Complete");
             } else {
                 counter++;
             }
-        }, 200/moves);
+        }, 200 / moves);
     })
-    
+
 }
 
 export const moveMarbles = (changeInfoArray) => {
     return new Promise((resolve) => {
-        if(!changeInfoArray.length){
+        if (!changeInfoArray.length) {
             return;
         }
         const moves = 10;
-        const distanceX = (changeInfoArray[0].start.x - changeInfoArray[0].end.x)/moves;    
-        const distanceY = (changeInfoArray[0].start.y - changeInfoArray[0].end.y)/moves;
+        const distanceX = (changeInfoArray[0].start.x - changeInfoArray[0].end.x) / moves;
+        const distanceY = (changeInfoArray[0].start.y - changeInfoArray[0].end.y) / moves;
 
         let counter = 1;
 
         let clock = setInterval(() => {
-            changeInfoArray.forEach(({element, start})=> {
+            changeInfoArray.forEach(({ element, start }) => {
                 element.setAttribute('cx', start.x - counter * distanceX);
                 element.setAttribute('cy', start.y - counter * distanceY);
             })
-            
-            if(counter >= moves){
+
+            if (counter >= moves) {
                 clearInterval(clock);
                 //reset marble coordinates for animation purpose
                 changeInfoArray.forEach(({ element, start }) => {
@@ -217,20 +209,37 @@ export const moveMarbles = (changeInfoArray) => {
             } else {
                 counter++;
             }
-        }, 200/moves);
-        
+        }, 200 / moves);
+
 
     })
 }
 
-export const getChangeInfoArray = (selectedHex, moveDirection, boardArray) => {
-    let changeInfoArray = getSelectedElements(selectedHex);
+
+export const getChangeInfoArray = (selectedHex, moveDirection, boardArray, marbleToPush) => {
+    let changeInfoArray = [];
+
+    //search and save svg elements for animation purpose
+    document.querySelectorAll('circle').forEach((e) => {
+        if (selectedHex.length >= 1 && e.getAttribute('location') === selectedHex[0]) {
+            changeInfoArray.push({ index: 0, element: e, originLocation: parseInt(selectedHex[0]) })
+        } else if (selectedHex.length >= 2 && e.getAttribute('location') === selectedHex[1]) {
+            changeInfoArray.push({ index: 1, element: e, originLocation: parseInt(selectedHex[1]) })
+        } else if (selectedHex.length >= 3 && e.getAttribute('location') === selectedHex[2]) {
+            changeInfoArray.push({ index: 2, element: e, originLocation: parseInt(selectedHex[2]) })
+        }
+
+        if(marbleToPush.length >=1 && parseInt(e.getAttribute('location')) === marbleToPush[0]) {
+            changeInfoArray.push({ index: -1, element: e, originLocation: marbleToPush[0] })
+        } else if (marbleToPush.length >=2 && parseInt(e.getAttribute('location')) === marbleToPush[1]) {
+            changeInfoArray.push({ index: -2, element: e, originLocation: marbleToPush[1] })
+        }
+    })
 
     changeInfoArray.forEach((marble, index) => {
-        const destLocation = destTable[marble.location][moveDirection];
-        changeInfoArray[index].originLocation = marble.location;
+        const destLocation = destTable[marble.originLocation][moveDirection];
         changeInfoArray[index].destLocation = destLocation;
-        changeInfoArray[index].start = boardArray[marble.location];
+        changeInfoArray[index].start = boardArray[marble.originLocation];
         changeInfoArray[index].end = boardArray[destLocation];
         changeInfoArray[index].direction = moveDirection;
     })
@@ -238,8 +247,49 @@ export const getChangeInfoArray = (selectedHex, moveDirection, boardArray) => {
     return changeInfoArray;
 }
 
+
+export const isLegalMove = (selectedHex, moveDirection, boardArray, curState) => {
+    let legalMove = false;
+    let marbleToPush = [];
+
+    if (selectedHex.length === 1) {
+        //if move dest location is clean, okay to move
+        if (curState[destTable[selectedHex[0]][moveDirection]] === 0) {
+            legalMove = true;
+        }
+    } else if (selectedHex.length === 2) {
+        if (destTable[selectedHex[0]][5 - moveDirection] !== parseInt(selectedHex[1]) && destTable[selectedHex[0]][moveDirection] !== parseInt(selectedHex[1])) {
+            //side move
+            if (!curState[destTable[selectedHex[0]][moveDirection]] && !curState[destTable[selectedHex[1]][moveDirection]]) {
+                //both marble move direction is clean, okay to move
+                legalMove = true;
+            }
+        } else {
+            //inline move
+
+            // since selected Hex is sorted from smallest to largest, 
+            // so we use location of index 0 for smaller side and location of index 1 for large side as trailing marble
+            const directionIndex = moveDirection < 3? 0 : 1;
+            const nextMarblePosition = destTable[selectedHex[directionIndex]][moveDirection];
+            const nextTwoMarblePosition = destTable[nextMarblePosition][moveDirection];
+
+            if(!curState[nextMarblePosition]){
+                //clean path
+                legalMove=true;
+            } else if (curState[nextMarblePosition] !== curState[selectedHex[0]] && !curState[nextTwoMarblePosition]) {
+                //next one is opponent marble and next two is empty
+                legalMove=true;
+                marbleToPush = [nextMarblePosition];
+            }           
+
+        }
+    }
+
+    return legalMove ? getChangeInfoArray(selectedHex, moveDirection, boardArray, marbleToPush) : null;
+}
+
 export const getNextState = (changeInfoArray, curState) => {
-    let nextState = [...curState];     
+    let nextState = [...curState];
 
     changeInfoArray.forEach(c1 => {
         nextState[c1.destLocation] = curState[c1.originLocation];
@@ -257,7 +307,7 @@ export const getNextState = (changeInfoArray, curState) => {
 }
 
 export const getNextStateByAIAction = (curState, action) => {
-    if(!action.length){
+    if (!action.length) {
         return;
     }
 
@@ -267,4 +317,21 @@ export const getNextStateByAIAction = (curState, action) => {
     })
 
     return nextState;
+}
+
+export const generateSupportlineTexts = (selectedHex, boardArray, moveDirection) => {
+    let points = [];
+
+    selectedHex.forEach(hex => {
+        const dest = destTable[hex][moveDirection];
+        if (dest === -1) {
+            return;
+        }
+        const start = boardArray[hex];
+        const end = boardArray[dest];
+        const point = `${start.x},${start.y} ${end.x},${end.y}`;
+        points.push(point);
+    })
+
+    return points;
 }
