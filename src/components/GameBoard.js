@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import {
     isLegalGroup, moveMarbles, getMoveDirection, isLegalMove, generateHistoryText,
-    getNextStateByAIAction, getNextState, generateSupportlineTexts, 
-} from './Util';
+    getNextStateByAIAction, getNextState, generateSupportlineTexts,
+} from '../utils/UtilFunctions';
 import AbaloneClient from '../utils/AbaloneClient';
 import { Button, Col, Progress, Row, Modal, message } from 'antd';
 import GameInfoBoard from './GameInfoBoard';
@@ -16,31 +16,28 @@ export default class GameBoard extends Component {
             selectedHex: [],
             supportLine: [],
             curState: [],
-            lastState:[],
+            lastState: [],
             stateOption: 1,
             progress: 100,
             timeLeft: 0,
             pause: false,
             start: false,
-            moveHistory:[],
+            moveHistory: [],
             serverConfirmVisible: false
         }
 
     }
 
-    componentWillMount() {        
+    componentWillMount() {
         this.setState({
-            gameType: this.props.gameSettings.gameType,
-            playerColor: this.props.gameSettings.playerColor,
-            curState: this.props.boardInitState,
-            timeLimit: this.props.gameSettings.timeLimit,
-            moveLimit: this.props.gameSettings.moveLimit,
+            ...this.props.gameSettings,
+            curState: this.props.gameSettings.boardInitState,
             turn: 1
         })
     }
 
     componentDidMount = () => {
-        if(this.props.gameSettings.gameType === "pve"){
+        if (this.props.gameSettings.gameType === "pve") {
             AbaloneClient.connect();
         }
     }
@@ -50,23 +47,24 @@ export default class GameBoard extends Component {
             clearInterval(this.state.clock);
         }
 
-        if(this.props.gameSettings.gameType === "pve"){
+        if (this.props.gameSettings.gameType === "pve") {
             AbaloneClient.close();
         }
     }
 
     clickMarble = (e) => {
-        if(!this.state.start){
+        if (!this.state.start) {
             return;
         }
 
         //black move in odd turn, white move in even turn
-        if (!this.state.changeInfoArray && this.state.turn % 2 === (2 - parseInt(e.target.getAttribute('color')))){
+        if (!this.state.changeInfoArray && this.state.turn % 2 === (2 - parseInt(e.target.getAttribute('color')))) {
             return;
-        }
+        }        
 
         //AI turn
-        if (!this.state.changeInfoArray && this.props.gameSettings.gameType === "pve" && this.props.gameSettings.playerColor !== parseInt(e.target.getAttribute('color'))) {
+        if (!this.state.changeInfoArray && this.props.gameSettings.gameType === "pve" 
+            && this.props.gameSettings.playerColor !== parseInt(e.target.getAttribute('color'))) {
             return;
         }
 
@@ -95,25 +93,25 @@ export default class GameBoard extends Component {
         if (this.state.supportLine.length) {
             //move marble
             this.setState({ selectedHex: [], supportLine: [] });
-            this.makeMove(this.state.changeInfoArray);         
+            this.makeMove(this.state.changeInfoArray);
         }
     }
 
     mouseOverHex = (e) => {
         if (!this.state.selectedHex.length) {
             return;
-        }        
+        }
 
         const moveDirection = getMoveDirection(this.state.selectedHex, e.target.getAttribute('location'));
 
-        if(moveDirection !== -1) {
+        if (moveDirection !== -1) {
             const changeInfoArray = isLegalMove(this.state.selectedHex, moveDirection, boardArray, this.state.curState);
 
-            if(changeInfoArray) {
-                const points = generateSupportlineTexts(this.state.selectedHex, boardArray, moveDirection);    
+            if (changeInfoArray) {
+                const points = generateSupportlineTexts(this.state.selectedHex, boardArray, moveDirection);
                 this.showSupportLine(points, changeInfoArray);
-            }           
-            
+            }
+
         }
     }
 
@@ -123,9 +121,9 @@ export default class GameBoard extends Component {
 
     showSupportLine = (points, changeInfoArray) => {
 
-        if(!points.length){
+        if (!points.length) {
             return;
-        } 
+        }
 
         this.setState({
             supportLine: points,
@@ -141,7 +139,7 @@ export default class GameBoard extends Component {
     }
 
     makeMove = async (changeInfoArray) => {
-        if(!changeInfoArray || !changeInfoArray.length){
+        if (!changeInfoArray || !changeInfoArray.length) {
             return;
         }
 
@@ -149,40 +147,42 @@ export default class GameBoard extends Component {
         await moveMarbles(changeInfoArray);
 
         //update move history board
-        this.updateMoveHistoryBoard(changeInfoArray);    
+        this.updateMoveHistoryBoard(changeInfoArray);
 
         //update board state
         const nextState = getNextState(changeInfoArray, this.state.curState);
         this.updateBoardState(nextState);
-        
+
         //If pve and AI turn, start AI move
-        if(this.props.gameSettings.gameType === "pve" && (this.state.turn % 2 === (2 - this.state.playerColor))){
+        if (this.props.gameSettings.gameType === "pve" && (this.state.turn % 2 === (2 - this.state.playerColor))) {
             this.makeAIMove();
         }
     }
 
-    updateMoveHistoryBoard = (changeInfoArray) => {       
+    updateMoveHistoryBoard = (changeInfoArray) => {
 
         //update move history
-        let marbles = []           
+        let marbles = []
 
         changeInfoArray.forEach(element => {
             marbles.push([element.originLocation]);
         })
 
+        const timeLimit = this.state.turn % 2 === 0 ? this.props.gameSettings.whiteTimeLimit : this.props.gameSettings.blackTimeLimit
+
         let action = {
             turn: this.state.turn,
             marbles,
             direction: changeInfoArray[0].direction,
-            time: this.state.timeLimit - this.state.timeLeft,
+            time: timeLimit - this.state.timeLeft,
             state: this.state.curState
         }
 
         action.text = generateHistoryText(action);
 
         this.setState(prevState => ({
-            moveHistory: [...prevState.moveHistory, action]          
-        }));  
+            moveHistory: [...prevState.moveHistory, action]
+        }));
     }
 
     updateBoardState = (boardState) => {
@@ -190,34 +190,39 @@ export default class GameBoard extends Component {
             clearInterval(this.state.clock);
         }
 
+        const { whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
+
         this.setState(prevState => ({
             lastState: prevState.curState,
             curState: boardState,
-            timeLeft: this.props.gameSettings.timeLimit,
+            timeLeft: prevState.turn % 2 === 1 ? whiteTimeLimit : blackTimeLimit,
             progress: 100,
             pause: false,
-            turn: prevState.turn + 1            
-        }));        
+            turn: prevState.turn + 1
+        }));
 
         this.startTimer();
     }
 
     makeAIMove = () => {
-        const { moveLimit, timeLimit } = this.props.gameSettings;
+        const { moveLimit, whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
+
+        const timeLimit = this.state.turn % 2 === 0 ? whiteTimeLimit : blackTimeLimit;
+
         const packet = {
             turnLimit: moveLimit, // replace hardcoded value with moveLimit
             timeLimit,
             state: this.state.curState,
             turn: this.state.turn
         };
-        
+
         let that = this;
-        
-        AbaloneClient.nextMove(packet).then(({action}) => {
+
+        AbaloneClient.nextMove(packet).then(({ action }) => {
             const nextState = getNextStateByAIAction(this.state.curState, action);
             that.updateBoardState(nextState);
         });
-        
+
 
     }
 
@@ -229,19 +234,19 @@ export default class GameBoard extends Component {
             })
         }
         return found;
-    }   
+    }
 
-    startGame = () => { 
-        if(!AbaloneClient.connected && this.state.gameType === "pve"){
+    startGame = () => {
+        if (!AbaloneClient.connected && this.state.gameType === "pve") {
             this.setState({ serverConfirmVisible: true })
         } else {
             this.setState({
                 start: true,
-                timeLeft: this.props.gameSettings.timeLimit
+                timeLeft: this.props.gameSettings.blackTimeLimit
             })
-            
+
             this.startTimer();
-        } 
+        }
     }
 
     pauseGame = () => {
@@ -268,21 +273,23 @@ export default class GameBoard extends Component {
             progress: 100,
             pause: false,
             start: false,
-            timeLeft:0,
-            selectedHex:[],
+            timeLeft: 0,
+            selectedHex: [],
             moveHistory: []
         })
     }
 
     undoLastMove = () => {
-        if(!this.state.lastState.length){
+        if (!this.state.lastState.length) {
             return;
         }
+
+        const { whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
 
         this.setState(prevState => ({
             lastState: [],
             curState: prevState.lastState,
-            timeLeft: this.props.gameSettings.timeLimit,
+            timeLeft: prevState.turn % 2 === 0 ? whiteTimeLimit : blackTimeLimit,
             progress: 100,
             pause: false,
             turn: prevState.turn - 1
@@ -296,9 +303,11 @@ export default class GameBoard extends Component {
             if (this.state.pause) {
                 clearInterval(clock);
             } else {
+                const { whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
                 if (this.state.timeLeft > 0) {
                     let timeLeft = this.state.timeLeft - 1 / period;
-                    let progress = (timeLeft/ this.props.gameSettings.timeLimit) * 100;
+                    let timeLimit = this.state.turn % 2 === 0 ? whiteTimeLimit : blackTimeLimit;
+                    let progress = (timeLeft / timeLimit) * 100;
 
                     this.setState({
                         timeLeft, progress
@@ -313,11 +322,11 @@ export default class GameBoard extends Component {
             clock
         })
     }
-    
+
     connectServer = async () => {
         this.closeServerConfirmBox();
         setTimeout(() => {
-            if(!AbaloneClient.connected){
+            if (!AbaloneClient.connected) {
                 message.error('Unable to connect server!');
             }
         }, 2000);
@@ -331,18 +340,18 @@ export default class GameBoard extends Component {
 
     render() {
 
-        const startIcon = this.state.start? (this.state.pause? "step-forward" : "pause-circle") : "caret-right";
-        const startClickFunction = this.state.start? this.pauseGame : this.startGame;
+        const startIcon = this.state.start ? (this.state.pause ? "step-forward" : "pause-circle") : "caret-right";
+        const startClickFunction = this.state.start ? this.pauseGame : this.startGame;
 
         return (
-            <div>                
+            <div>
                 <Row>
-                    <Col span={11} offset={1}>   
+                    <Col span={11} offset={1}>
                         <div style={{ margin: 30 }}>
-                            <Row gutter={4}>       
+                            <Row gutter={4}>
                                 <Col span={5} offset={1}>
                                     <Button type="primary" size="large" icon={startIcon} onClick={startClickFunction} block>
-                                        {this.state.start? (this.state.pause? "Resume" : "Pause") : "Start"}
+                                        {this.state.start ? (this.state.pause ? "Resume" : "Pause") : "Start"}
                                     </Button>
                                 </Col>
                                 <Col span={5}>
@@ -355,16 +364,16 @@ export default class GameBoard extends Component {
                                     <Button type="dashed" icon="backward" size="large" onClick={this.undoLastMove} block> Undo </Button>
                                 </Col>
                             </Row>
-                        </div>       
+                        </div>
                         <div>
-                            <DrawGameBoard                               
-                                curState = {this.state.curState}
-                                locationSelected = {this.locationSelected}                                
-                                supportLine = {this.state.supportLine}
-                                mouseOverHex = {this.mouseOverHex}
-                                mouseOutHex = {this.mouseOutHex}
-                                clickHex = {this.clickHex}
-                                clickMarble = {this.clickMarble}
+                            <DrawGameBoard
+                                curState={this.state.curState}
+                                locationSelected={this.locationSelected}
+                                supportLine={this.state.supportLine}
+                                mouseOverHex={this.mouseOverHex}
+                                mouseOutHex={this.mouseOutHex}
+                                clickHex={this.clickHex}
+                                clickMarble={this.clickMarble}
                             />
                         </div>
 
@@ -384,7 +393,7 @@ export default class GameBoard extends Component {
                     onCancel={this.closeServerConfirmBox}
                     okText="Reconnect"
                     cancelText="Cancel"
-                    >
+                >
                     Server disconnected. Do you want to re-connect?
                 </Modal>
             </div>

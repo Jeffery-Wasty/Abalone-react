@@ -2,22 +2,13 @@ import React, { Component } from 'react';
 import { Button, Modal } from 'antd';
 import GameBoard from './components/GameBoard';
 import Settings from './components/Settings';
-// import AbaloneClient from './utils/AbaloneClient';
-import { getInitialState } from './components/InitState';
-
 import BackgroundPic from './image/bk_main1.jpg';
 import gamePic from './image/bk.jpg';
 import gamePic1 from './image/bk1.jpg';
 import './css/App.css';
-
 class App extends Component {
 
   state = {
-    gameType: "pvp",
-    boardInitState: 1,
-    playerColor: 2,
-    moveLimit: 40,
-    timeLimit: 20,
     settingVisible: false
   }
 
@@ -56,8 +47,7 @@ class App extends Component {
 
   render() {
     return (
-
-      <div>        
+      <div className="App">        
         {this.state.mainScreen? 
           <div style={{height: '100vh', backgroundImage: `url(${BackgroundPic})`, backgroundRepeat: 'no-repeat', backgroundSize: 'cover'}}>
             <Button 
@@ -80,7 +70,6 @@ class App extends Component {
           </div> : 
           <div style={{height: '100vh', backgroundImage: `url(${this.state.gameType==="pvp"? gamePic : gamePic1})`, backgroundRepeat: 'no-repeat', backgroundSize: 'cover'}}>    
               <GameBoard 
-                boardInitState={getInitialState(this.state.boardInitState)} 
                 stopGame={this.stopGame}
                 gameSettings={this.state} 
               />

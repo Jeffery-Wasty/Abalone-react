@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { Button, InputNumber, Radio } from 'antd';
+import { Button, InputNumber, Radio, Col, Row } from 'antd';
+import { getInitialState } from '../utils/InitState';
 
 export default class Settings extends Component {
 
@@ -8,7 +9,8 @@ export default class Settings extends Component {
         boardInitState: 1,
         playerColor: 2,
         moveLimit: 40,
-        timeLimit: 20,
+        whiteTimeLimit: 20,
+        blackTimeLimit: 20
     }
 
     handleGameType = (e) => {
@@ -27,12 +29,19 @@ export default class Settings extends Component {
         this.setState({ moveLimit: e });
     }
 
-    handleTimeLimit = (e) => {
-        this.setState({ timeLimit: e });
+    handleTimeLimitWhite = (e) => {
+        this.setState({ whiteTimeLimit: e });
+    }
+
+    handleTimeLimitBlack = (e) => {
+        this.setState({ blackTimeLimit: e });
     }
 
     startGame = () => {
-        this.props.startGame(this.state);
+        let gameSettings = [...this.state];
+        gameSettings.boardInitState = getInitialState(this.state.boardInitState);
+
+        this.props.startGame(gameSettings);
     }
 
     render() {
@@ -66,18 +75,28 @@ export default class Settings extends Component {
                         </Radio.Group>
                     </div> : null}
 
+                <Row>
+                    <Col span={12} >
+                        <div style={{ margin: 20 }}>
+                            <h3>Time limit (White)</h3>
+                            <InputNumber min={1} max={1000} defaultValue={20} onChange={this.handleTimeLimitWhite} />
+                        </div>
+                    </Col>
+                    <Col span={12} >
+                        <div style={{ margin: 20 }}>
+                            <h3>Time limit (Black)</h3>
+                            <InputNumber min={1} max={1000} defaultValue={20} onChange={this.handleTimeLimitBlack} />
+                        </div>
+                    </Col>
+                </Row>
 
                 <div style={{ margin: 20 }}>
-                    <h3>Move limit per player per game</h3>
+                    <h3>Move limit white</h3>
 
                     <InputNumber min={1} max={100} defaultValue={40} onChange={this.handleMoveLimit} />
                 </div>
 
-                <div style={{ margin: 20 }}>
-                    <h3>Time limit per move</h3>
 
-                    <InputNumber min={1} max={1000} defaultValue={20} onChange={this.handleTimeLimit} />
-                </div>
 
                 <div style={{ margin: 20 }}>
                     <Button type="primary" block onClick={this.startGame}>Good Luck, have fun! </Button>

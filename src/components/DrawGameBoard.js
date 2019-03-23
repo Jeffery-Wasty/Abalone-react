@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { getHexCornerCoordinate, getBaseBoardCornerCoordinate, generateBoardCoordArray } from './Util';
+import { getHexCornerCoordinate, getBaseBoardCornerCoordinate, generateBoardCoordArray } from '../utils/UtilFunctions';
 
 export const start_point = { x: 75, y: 25 };
 export const circleRadius = 9;

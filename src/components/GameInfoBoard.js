@@ -7,10 +7,9 @@ export default class GameInfoBoard extends Component {
     historyVisible: false
   }
 
-  //color white 1, black 2
-  getTimer = (color) => {
+  getTimer = (player) => {
     let timer = 0;
-    if (color === 1) {
+    if (player === 1) {
       if (this.props.gameInfo.turn % 2 === 0) {
         timer = this.props.gameInfo.timeLeft
       }
