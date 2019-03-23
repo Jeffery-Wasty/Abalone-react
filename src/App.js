@@ -8,6 +8,7 @@ import { getInitialState } from './components/InitState';
 import BackgroundPic from './image/bk_main1.jpg';
 import gamePic from './image/bk.jpg';
 import gamePic1 from './image/bk1.jpg';
+import './css/App.css';
 
 class App extends Component {
 
@@ -60,7 +61,7 @@ class App extends Component {
         {this.state.mainScreen? 
           <div style={{height: '100vh', backgroundImage: `url(${BackgroundPic})`, backgroundRepeat: 'no-repeat', backgroundSize: 'cover'}}>
             <Button 
-              style={{ margin: '35% 0 0 38%', width: 300, height: 100, fontSize: 50, color: '#0026ca' }} 
+              style={{ margin: '35% 0 0 38%', width: 300, height: 100, fontSize: 50, color: '#0026ca', fontFamily: `"Comic Sans MS", cursive, sans-serif` }} 
               size="large" 
               onClick={this.showSettings}
               ghost

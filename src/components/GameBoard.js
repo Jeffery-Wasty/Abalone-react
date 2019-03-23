@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import {
     isLegalGroup, generateBoardCoordArray, getHexCornerCoordinate,
-    moveMarbles, getMoveDirection, boardNameArray, getArrowSymbol, isLegalMove,
+    moveMarbles, getMoveDirection, isLegalMove, generateHistoryText,
     getNextStateByAIAction, getNextState, generateSupportlineTexts, 
 } from './Util';
 import AbaloneClient from '../utils/AbaloneClient';
-import { Button, Col, Progress, Row, Modal } from 'antd';
+import { Button, Col, Progress, Row, Modal, message } from 'antd';
 import GameInfoBoard from './GameInfoBoard';
 
 const start_point = { x: 75, y: 25 };
@@ -26,8 +26,7 @@ export default class GameBoard extends Component {
             timeLeft: 0,
             pause: false,
             start: false,
-            whiteMoveHistory:[],
-            blackMoveHistory:[],
+            moveHistory:[],
             serverConfirmVisible: false
         }
 
@@ -169,26 +168,28 @@ export default class GameBoard extends Component {
         }
     }
 
-    updateMoveHistoryBoard = (changeInfoArray) => {
+    updateMoveHistoryBoard = (changeInfoArray) => {       
+
         //update move history
-        let action = `Turn ${this.state.turn}: `;            
+        let marbles = []           
 
         changeInfoArray.forEach(element => {
-            action += boardNameArray[element.originLocation] + " ";
+            marbles.push([element.originLocation]);
         })
 
-        action += getArrowSymbol(changeInfoArray[0].direction);
-        action += ` - Time: ${Math.round(this.state.timeLimit - this.state.timeLeft)}s`;
-
-        if(this.state.turn % 2 === 0){
-            this.setState(prevState => ({
-                whiteMoveHistory: [...prevState.whiteMoveHistory, action]          
-            }));            
-        } else {
-            this.setState(prevState => ({
-                blackMoveHistory: [...prevState.blackMoveHistory, action]          
-            }));            
+        let action = {
+            turn: this.state.turn,
+            marbles,
+            direction: changeInfoArray[0].direction,
+            time: this.state.timeLimit - this.state.timeLeft,
+            state: this.state.curState
         }
+
+        action.text = generateHistoryText(action);
+
+        this.setState(prevState => ({
+            moveHistory: [...prevState.moveHistory, action]          
+        }));  
     }
 
     updateBoardState = (boardState) => {
@@ -222,7 +223,6 @@ export default class GameBoard extends Component {
         AbaloneClient.nextMove(packet).then(({action}) => {
             const nextState = getNextStateByAIAction(this.state.curState, action);
             that.updateBoardState(nextState);
-            console.log(action);
         });
         
 
@@ -277,8 +277,7 @@ export default class GameBoard extends Component {
             start: false,
             timeLeft:0,
             selectedHex:[],
-            whiteMoveHistory: [],
-            blackMoveHistory: []
+            moveHistory: []
         })
     }
 
@@ -324,6 +323,11 @@ export default class GameBoard extends Component {
     
     connectServer = async () => {
         this.closeServerConfirmBox();
+        setTimeout(() => {
+            if(!AbaloneClient.connected){
+                message.error('Unable to connect server!');
+            }
+        }, 2000);
         await AbaloneClient.connect();
         this.startGame();
     }

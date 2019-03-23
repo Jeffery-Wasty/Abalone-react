@@ -429,3 +429,17 @@ export const generateSupportlineTexts = (selectedHex, boardArray, moveDirection)
 
     return points;
 }
+
+export const generateHistoryText = (history) => {
+    let text = "";
+
+    text += `Turn ${history.turn}: `;
+
+    history.marbles.forEach(marble => {
+      text += `${boardNameArray[marble]} `;
+    })
+    text += `${getArrowSymbol(history.direction)} - `;
+    text += `Time takes: ${Math.round(history.time)}s`;
+
+    return text;
+  }

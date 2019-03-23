@@ -1,7 +1,12 @@
 import React, { Component } from 'react';
-import { Timeline, Statistic, Card, Row, Col, Icon } from 'antd';
+import { Timeline, Statistic, Card, Row, Col, Icon, Button, Drawer } from 'antd';
+import { boardNameArray, getArrowSymbol } from './Util';
+import HistoryBoard from './HistoryBoard';
 
 export default class GameInfoBoard extends Component {
+  state={
+    historyVisible: false
+  }
 
   //color white 1, black 2
   getTimer = (color) => {
@@ -29,7 +34,7 @@ export default class GameInfoBoard extends Component {
     } else if(this.calculateGameScore(player) > this.calculateGameScore(3-player)){
       return <Icon type="smile" />;
     } else {
-      return <Icon type="meh" />;
+      return null;
     }
   }
 
@@ -43,37 +48,70 @@ export default class GameInfoBoard extends Component {
     }
   }
 
+  getPlayerTitle = (player) => {
+    const colorString = (player === 1)? "White" : "Black";
+    if(this.props.gameInfo.gameType === "pve" && this.props.gameInfo.playerColor !== player){
+      return colorString + " - AI"; 
+    } else {
+      return colorString;
+    }
+  }
+
+  getPlayerMoveHistory = (player) => {
+    let moveHistory = [...this.props.gameInfo.moveHistory];
+    moveHistory = moveHistory.filter(history => history.turn % 2 === (player - 1));
+    moveHistory.reverse();
+
+    return moveHistory;    
+  }
+
+  viewHistory = () => {
+    this.setState({
+      historyVisible: true,
+    });
+  }
+
+
+  closeHistory = () => {
+    this.setState({
+      historyVisible: false,
+    });
+  };
+
   render() {
     const whiteBkStyle = (this.props.gameInfo.turn % 2 === 0) ? {} : { opacity: 0.5 };
     const blackBkStyle = (this.props.gameInfo.turn % 2 === 1) ? {} : { opacity: 0.5 };
 
-    const whiteTimelineStyle = (this.props.gameInfo.turn % 2 === 0) ? { minHeight: '60vh', maxHeight: '60vh' } : { opacity: 0.5, minHeight: '60vh', maxHeight: '60vh' };
-    const blackTimelineStyle = (this.props.gameInfo.turn % 2 === 1) ? { minHeight: '60vh', maxHeight: '60vh' } : { opacity: 0.5, minHeight: '60vh', maxHeight: '60vh' };
-    const turnSuffix = `/ ${this.props.gameInfo.moveLimit * 2}`;
+    const whiteTimelineStyle = (this.props.gameInfo.turn % 2 === 0) ? { minHeight: '50vh', maxHeight: '50vh' } :  { opacity: 0.5, minHeight: '50vh', maxHeight: '50vh' };
+    const blackTimelineStyle = (this.props.gameInfo.turn % 2 === 1) ? { minHeight: '50vh', maxHeight: '50vh' } :  { opacity: 0.5, minHeight: '50vh', maxHeight: '50vh' };
+
+    const blackHeadStyle = {fontSize: 30, fontFamily: `"Comic Sans MS", cursive, sans-serif`, fontWeight: "bold", backgroundColor: "#f57c00"};
+    const whiteHeadStyle = {fontSize: 30, fontFamily: `"Comic Sans MS", cursive, sans-serif`, fontWeight: "bold", backgroundColor: "#f57c00", color: "#fff"};
+
     return (
       <div style={{ maxHeight: 600 }}>
 
         <Row>
-          <div style={{ margin: 20, float: "right" }}>
-            <Statistic value={this.props.gameInfo.turn} prefix="Turn: " suffix={turnSuffix} valueStyle={{ fontSize: 40, color: "#fafafa" }} />
+          <div style={{ margin: 30, float: "right" }}>
+            <Statistic 
+              value={this.props.gameInfo.turn} prefix={`Game Turn: `} suffix={` / ${this.props.gameInfo.moveLimit * 2}`} 
+              valueStyle={{ fontSize: 40, color: "#fff", fontFamily: `"Comic Sans MS", cursive, sans-serif` }} />
           </div>
         </Row>
 
         <Row gutter={16}>
-
           <Col span={12}>
-            <Card style={blackBkStyle} >
+            <Card style={blackBkStyle} headStyle={blackHeadStyle} title={this.getPlayerTitle(2)} 
+                  bordered={false} size="small" >
               <Row>
                 <Col span={12}>
                   <Statistic
-                    title="Black Player"
+                    title="Score"
                     value={this.calculateGameScore(2)}
-                    precision={0}
-                    valueStyle={{ color: this.getScoreColor(2) }}
+                    valueStyle={{ color: this.getScoreColor(2)}}
                     prefix={this.getScoreImage(2)}
                   />
                 </Col>
-
                 <Col span={12}>
                   <Statistic title="Time" value={this.getTimer(2)} suffix=" s" />
                 </Col>
@@ -81,25 +119,23 @@ export default class GameInfoBoard extends Component {
             </Card>
 
             <Card style={blackTimelineStyle}>
-              <Timeline>
-                {this.props.gameInfo.blackMoveHistory.length && this.props.gameInfo.blackMoveHistory.map((history, key) => {
-                  return key === (this.props.gameInfo.blackMoveHistory.length - 1) ?
-                    <Timeline.Item key={key} color="green">{history}</Timeline.Item> :
-                    <Timeline.Item key={key} color="blue">{history}</Timeline.Item>
-                })}
-              </Timeline>
+                <Timeline>
+                  {this.getPlayerMoveHistory(2).slice(0, 10).map((history, key) => {
+                      return key === 0 ? <Timeline.Item key={key} color="green">{history.text}</Timeline.Item> :
+                                         <Timeline.Item key={key} color="blue">{history.text}</Timeline.Item>
+                  })}
+                </Timeline>             
             </Card>
 
           </Col>
 
           <Col span={12} >
-            <Card style={whiteBkStyle}>
+            <Card style={whiteBkStyle} headStyle={whiteHeadStyle} title={this.getPlayerTitle(1)} bordered={false} size="small">
               <Row>
                 <Col span={12}>
                   <Statistic
-                    title="White Player"
+                    title="Score"
                     value={this.calculateGameScore(1)}
-                    precision={0}
                     valueStyle={{ color: this.getScoreColor(1)}}
                     prefix={this.getScoreImage(1)}
                   />
@@ -113,16 +149,34 @@ export default class GameInfoBoard extends Component {
 
             <Card style={whiteTimelineStyle}>
               <Timeline>
-                {this.props.gameInfo.whiteMoveHistory.length && this.props.gameInfo.whiteMoveHistory.map((history, key) => {
-                  return key === (this.props.gameInfo.whiteMoveHistory.length - 1) ?
-                    <Timeline.Item key={key} color="green">{history}</Timeline.Item> :
-                    <Timeline.Item key={key} color="blue">{history}</Timeline.Item>
-                })}
+                {this.getPlayerMoveHistory(1).map((history, key) => {
+                      return key === 0 ? <Timeline.Item key={key} color="green">{history.text}</Timeline.Item> :
+                                         <Timeline.Item key={key} color="blue">{history.text}</Timeline.Item>
+                  })}
               </Timeline>
             </Card>
 
           </Col>
         </Row>
+
+        <Row>
+          <Button style={{float: "right", marginTop: 50, fontFamily: `"Comic Sans MS", cursive, sans-serif` }} 
+                  onClick={this.viewHistory} type="dashed" ghost>
+                  View Entire History
+          </Button>
+        </Row>
+
+
+        <Drawer
+          title="History"
+          placement="right"
+          width={800}
+          onClose={this.closeHistory}
+          visible={this.state.historyVisible}
+        >
+          <HistoryBoard moveHistory={this.props.gameInfo.moveHistory} />
+        </Drawer>
+        
       </div>
 
     )
