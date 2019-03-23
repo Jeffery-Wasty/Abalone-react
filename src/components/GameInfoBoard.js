@@ -76,15 +76,24 @@ export default class GameInfoBoard extends Component {
     });
   };
 
+  getGameInfoBoardStyle = () => {
+    const { turn } = this.props.gameInfo;
+
+    const whiteBkStyle = (turn % 2 === 0) ? {} : { opacity: 0.5 };
+    const blackBkStyle = (turn % 2 === 1) ? {} : { opacity: 0.5 };
+
+    const whiteTimelineStyle = (turn % 2 === 0) ? { minHeight: '50vh', maxHeight: '50vh' } :  { opacity: 0.5, minHeight: '50vh', maxHeight: '50vh' };
+    const blackTimelineStyle = (turn % 2 === 1) ? { minHeight: '50vh', maxHeight: '50vh' } :  { opacity: 0.5, minHeight: '50vh', maxHeight: '50vh' };
+
+    const blackHeadStyle = {fontSize: 30, fontWeight: "bold", backgroundColor: "#f57c00"};
+    const whiteHeadStyle = {fontSize: 30, fontWeight: "bold", backgroundColor: "#f57c00", color: "#fff"};
+
+    return {whiteBkStyle, blackBkStyle, whiteTimelineStyle, blackTimelineStyle, blackHeadStyle, whiteHeadStyle};
+  }
+
   render() {
-    const whiteBkStyle = (this.props.gameInfo.turn % 2 === 0) ? {} : { opacity: 0.5 };
-    const blackBkStyle = (this.props.gameInfo.turn % 2 === 1) ? {} : { opacity: 0.5 };
-
-    const whiteTimelineStyle = (this.props.gameInfo.turn % 2 === 0) ? { minHeight: '50vh', maxHeight: '50vh' } :  { opacity: 0.5, minHeight: '50vh', maxHeight: '50vh' };
-    const blackTimelineStyle = (this.props.gameInfo.turn % 2 === 1) ? { minHeight: '50vh', maxHeight: '50vh' } :  { opacity: 0.5, minHeight: '50vh', maxHeight: '50vh' };
-
-    const blackHeadStyle = {fontSize: 30, fontFamily: `"Comic Sans MS", cursive, sans-serif`, fontWeight: "bold", backgroundColor: "#f57c00"};
-    const whiteHeadStyle = {fontSize: 30, fontFamily: `"Comic Sans MS", cursive, sans-serif`, fontWeight: "bold", backgroundColor: "#f57c00", color: "#fff"};
+    const { turn, moveLimit, moveHistory } = this.props.gameInfo;
+    const {whiteBkStyle, blackBkStyle, whiteTimelineStyle, blackTimelineStyle, blackHeadStyle, whiteHeadStyle} = this.getGameInfoBoardStyle();
 
     return (
       <div style={{ maxHeight: 600 }}>
@@ -92,7 +101,7 @@ export default class GameInfoBoard extends Component {
         <Row>
           <div style={{ margin: 30, float: "right" }}>
             <Statistic 
-              value={this.props.gameInfo.turn} prefix={`Game Turn: `} suffix={` / ${this.props.gameInfo.moveLimit * 2}`} 
+              value={turn} prefix={`Game Turn: `} suffix={` / ${moveLimit * 2}`} 
               valueStyle={{ fontSize: 40, color: "#fff", fontFamily: `"Comic Sans MS", cursive, sans-serif` }} />
           </div>
         </Row>
@@ -158,7 +167,7 @@ export default class GameInfoBoard extends Component {
         </Row>
 
         <Row>
-          <Button style={{float: "right", marginTop: 50, fontFamily: `"Comic Sans MS", cursive, sans-serif` }} 
+          <Button style={{float: "right", marginTop: 50 }} 
                   onClick={this.viewHistory} type="dashed" ghost>
                   View Entire History
           </Button>
@@ -172,7 +181,7 @@ export default class GameInfoBoard extends Component {
           onClose={this.closeHistory}
           visible={this.state.historyVisible}  
         >
-          <HistoryBoard moveHistory={this.props.gameInfo.moveHistory} />
+          <HistoryBoard moveHistory={moveHistory} />
         </Drawer>
         
       </div>
