@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { Timeline, Statistic, Card, Row, Col, Icon, Button, Drawer } from 'antd';
-import { boardNameArray, getArrowSymbol } from './Util';
 import HistoryBoard from './HistoryBoard';
 
 export default class GameInfoBoard extends Component {
@@ -170,7 +169,7 @@ export default class GameInfoBoard extends Component {
         <Drawer
           title="History"
           placement="right"
-          width={800}
+          width={1200}
           onClose={this.closeHistory}
           visible={this.state.historyVisible}
         >

@@ -17,9 +17,6 @@ export default class HistoryBoard extends Component {
                             size="small"
                             header={<div>Move History</div>}
                             pagination={{
-                                onChange: (page) => {
-                                    console.log(page);
-                                },
                                 pageSize: 15,
                             }}
                             bordered

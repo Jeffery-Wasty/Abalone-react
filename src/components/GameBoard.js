@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import {
-    isLegalGroup, generateBoardCoordArray, getHexCornerCoordinate,
+    isLegalGroup, generateBoardCoordArray, getHexCornerCoordinate, getBaseBoardCornerCoordinate,
     moveMarbles, getMoveDirection, isLegalMove, generateHistoryText,
     getNextStateByAIAction, getNextState, generateSupportlineTexts, 
 } from './Util';
@@ -364,7 +364,7 @@ export default class GameBoard extends Component {
                             </Row>
                         </div>       
                         <div>
-                            <svg id="test-polygon" viewBox="0 0 240 200" style={{transform:'perspective(1000px) rotateX(10deg)'}}>
+                            <svg id="test-polygon" viewBox="0 0 240 200" style={{transform:'perspective(1000px) rotateX(5deg)'}}>
                                 <defs>
                                     <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5"
                                         markerWidth="3" markerHeight="3"
@@ -395,6 +395,15 @@ export default class GameBoard extends Component {
                                     </radialGradient>
                                 </defs>
 
+                                <polygon
+                                    location={-1}
+                                    cx={this.state.boardArray[30].x}
+                                    cy={this.state.boardArray[30].y}
+                                    points={getBaseBoardCornerCoordinate(this.state.boardArray[30], hexSize)}
+                                    fill='#bb4d00'
+                                    stroke="#000"
+                                />
+
                                 {this.state.boardArray.map((center, key) =>
                                     <polygon
                                         key={key}
@@ -402,7 +411,7 @@ export default class GameBoard extends Component {
                                         cx={center.x}
                                         cy={center.y}
                                         points={getHexCornerCoordinate(center, hexSize)}
-                                        fill={this.locationSelected(key) ? '#a30000' : '#f57c00'}
+                                        fill={this.locationSelected(key) ? '#d50000' : '#f57c00'}
                                         stroke="#000"
                                         onMouseOver={this.mouseOverHex}
                                         onMouseOut={this.mouseOutHex}

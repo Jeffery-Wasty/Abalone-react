@@ -95,6 +95,20 @@ export const getHexCornerCoordinate = (center, size) => {
     return point_str;
 }
 
+export const getBaseBoardCornerCoordinate = (center, size) => {
+    let point_str = "";
+
+    for (let i = 0; i < 6; i++) {
+        const angle_deg = 60 * i;
+        const angle_rad = Math.PI / 180 * angle_deg;
+        const x = center.x + 8.5 * size * Math.cos(angle_rad);
+        const y = center.y + 8.5 * size * Math.sin(angle_rad);
+        point_str += `${x},${y} `;
+    }
+
+    return point_str;
+}
+
 export const Point = (x, y) => {
     return { x: x, y: y }
 }
@@ -439,7 +453,7 @@ export const generateHistoryText = (history) => {
       text += `${boardNameArray[marble]} `;
     })
     text += `${getArrowSymbol(history.direction)} - `;
-    text += `Time takes: ${Math.round(history.time)}s`;
+    text += `Time taken: ${Math.round(history.time)}s`;
 
     return text;
   }
