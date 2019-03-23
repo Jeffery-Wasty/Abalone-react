@@ -171,7 +171,7 @@ export default class GameInfoBoard extends Component {
           placement="right"
           width={1200}
           onClose={this.closeHistory}
-          visible={this.state.historyVisible}
+          visible={this.state.historyVisible}  
         >
           <HistoryBoard moveHistory={this.props.gameInfo.moveHistory} />
         </Drawer>

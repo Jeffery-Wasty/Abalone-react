@@ -93,36 +93,6 @@ export default class DrawGameBoard extends Component {
                         />
                     )}
 
-                    {/* {this.props.supportLine.length ?
-                        <polyline
-                            points={this.props.supportLine[0]}
-                            stroke="#fff176"
-                            strokeWidth="2"
-                            strokeDasharray="3,3"
-                            markerEnd="url(#arrow)"
-                        /> : null
-                    }
-
-                    {this.props.supportLine.length > 1 ?
-                        <polyline
-                            points={this.props.supportLine[1]}
-                            stroke="#fff176"
-                            strokeWidth="2"
-                            strokeDasharray="3,3"
-                            markerEnd="url(#arrow)"
-                        /> : null
-                    }
-
-                    {this.props.supportLine.length > 2 ?
-                        <polyline
-                            points={this.props.supportLine[2]}
-                            stroke="#fff176"
-                            strokeWidth="2"
-                            strokeDasharray="3,3"
-                            markerEnd="url(#arrow)"
-                        /> : null
-                    } */}
-
                 </svg>
             </div>
         )

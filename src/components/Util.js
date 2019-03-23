@@ -428,6 +428,7 @@ export const getNextStateByAIAction = (curState, action) => {
 }
 
 export const generateSupportlineTexts = (selectedHex, boardArray, moveDirection) => {
+    debugger;
     let points = [];
 
     selectedHex.forEach(hex => {
