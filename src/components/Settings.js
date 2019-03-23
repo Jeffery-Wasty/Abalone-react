@@ -38,7 +38,7 @@ export default class Settings extends Component {
     }
 
     startGame = () => {
-        let gameSettings = [...this.state];
+        let gameSettings = {...this.state};
         gameSettings.boardInitState = getInitialState(this.state.boardInitState);
 
         this.props.startGame(gameSettings);
