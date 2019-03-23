@@ -40,7 +40,7 @@ export default class HistoryBoard extends Component {
                             size="small"
                             header={<div>Move History</div>}
                             pagination={{
-                                pageSize: 15,
+                                pageSize: 12,
                             }}
                             bordered
                             dataSource={this.props.moveHistory}
