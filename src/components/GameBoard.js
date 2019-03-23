@@ -33,7 +33,7 @@ export default class GameBoard extends Component {
 
     }
 
-    componentWillMount() {
+    componentWillMount() {        
         this.setState({
             boardArray: generateBoardCoordArray(start_point, hexSize),
             gameType: this.props.gameSettings.gameType,
@@ -46,16 +46,18 @@ export default class GameBoard extends Component {
     }
 
     componentDidMount = () => {
-        // this.listenerId = AbaloneClient.addHandler('game-state', (res) => {
-        //     const state = JSON.parse(res.state);
-        //     this.setState({ curState: state });
-        // });
+        if(this.props.gameSettings.gameType === "pve"){
+            AbaloneClient.connect();
+        }
     }
 
     componentWillUnmount = () => {
-        //AbaloneClient.removeHandler('game-state', this.listenerId);
         if (this.state.clock) {
             clearInterval(this.state.clock);
+        }
+
+        if(this.props.gameSettings.gameType === "pve"){
+            AbaloneClient.close();
         }
     }
 

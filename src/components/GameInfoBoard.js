@@ -17,6 +17,32 @@ export default class GameInfoBoard extends Component {
     }
     return Math.round(timer * 100) / 100;
   }
+
+  calculateGameScore = (player) => {
+      const numOfMarbles = this.props.gameInfo.curState.filter(color => color === (3 - player)).length;
+      return 14 - numOfMarbles;
+  }
+
+  getScoreImage = (player) => {
+    if(this.calculateGameScore(player) < this.calculateGameScore(3-player)){
+      return <Icon type="frown" />;
+    } else if(this.calculateGameScore(player) > this.calculateGameScore(3-player)){
+      return <Icon type="smile" />;
+    } else {
+      return <Icon type="meh" />;
+    }
+  }
+
+  getScoreColor = (player) => {
+    if(this.calculateGameScore(player) < this.calculateGameScore(3-player)){
+      return '#cf1322';
+    } else if(this.calculateGameScore(player) > this.calculateGameScore(3-player)){
+      return '#3f8600';
+    } else {
+      return '#000';
+    }
+  }
+
   render() {
     const whiteBkStyle = (this.props.gameInfo.turn % 2 === 0) ? {} : { opacity: 0.5 };
     const blackBkStyle = (this.props.gameInfo.turn % 2 === 1) ? {} : { opacity: 0.5 };
@@ -41,10 +67,10 @@ export default class GameInfoBoard extends Component {
                 <Col span={12}>
                   <Statistic
                     title="Black Player"
-                    value={1}
+                    value={this.calculateGameScore(2)}
                     precision={0}
-                    valueStyle={{ color: '#cf1322' }}
-                    prefix={<Icon type="frown" />}
+                    valueStyle={{ color: this.getScoreColor(2) }}
+                    prefix={this.getScoreImage(2)}
                   />
                 </Col>
 
@@ -72,10 +98,10 @@ export default class GameInfoBoard extends Component {
                 <Col span={12}>
                   <Statistic
                     title="White Player"
-                    value={3}
+                    value={this.calculateGameScore(1)}
                     precision={0}
-                    valueStyle={{ color: '#3f8600' }}
-                    prefix={<Icon type="smile" />}
+                    valueStyle={{ color: this.getScoreColor(1)}}
+                    prefix={this.getScoreImage(1)}
                   />
                 </Col>
 
