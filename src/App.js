@@ -47,7 +47,7 @@ class App extends Component {
 
   render() {
     return (
-      <div className="App">        
+      <div className="Custom-font">        
         {this.state.mainScreen? 
           <div style={{height: '100vh', backgroundImage: `url(${BackgroundPic})`, backgroundRepeat: 'no-repeat', backgroundSize: 'cover'}}>
             <Button 
@@ -59,11 +59,11 @@ class App extends Component {
               Start Game 
             </Button>      
             <Modal
-            title="Settings"
-            visible={this.state.settingVisible}
-            onCancel={this.closeSettings}
-            footer={null}
-            centered
+              title={<div className="Custom-font" style={{fontSize: 25}}>Settings</div>}
+              visible={this.state.settingVisible}
+              onCancel={this.closeSettings}
+              footer={null}
+              centered
             >
               <Settings startGame={this.startGame} />
             </Modal>    

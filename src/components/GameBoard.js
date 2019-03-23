@@ -168,7 +168,9 @@ export default class GameBoard extends Component {
             marbles.push([element.originLocation]);
         })
 
-        const timeLimit = this.state.turn % 2 === 0 ? this.props.gameSettings.whiteTimeLimit : this.props.gameSettings.blackTimeLimit
+        const {whiteTimeLimit, blackTimeLimit} = this.props.gameSettings;
+
+        const timeLimit = this.state.turn % 2 === 0 ? whiteTimeLimit : blackTimeLimit
 
         let action = {
             turn: this.state.turn,
@@ -202,15 +204,17 @@ export default class GameBoard extends Component {
         }));
 
         this.startTimer();
+     
     }
 
     makeAIMove = () => {
-        const { moveLimit, whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
+        const { whiteMoveLimit, blackMoveLimit, whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
 
         const timeLimit = this.state.turn % 2 === 0 ? whiteTimeLimit : blackTimeLimit;
+        const moveLimit = this.state.playerColor === 2? whiteMoveLimit : blackMoveLimit;
 
         const packet = {
-            turnLimit: moveLimit, // replace hardcoded value with moveLimit
+            turnLimit: moveLimit, 
             timeLimit,
             state: this.state.curState,
             turn: this.state.turn
@@ -297,6 +301,12 @@ export default class GameBoard extends Component {
     }
 
     startTimer = () => {
+        const { whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
+
+        if(!whiteTimeLimit && !blackTimeLimit) {
+            return;
+        }
+
         const period = 10;
 
         let clock = setInterval(() => {
@@ -342,6 +352,7 @@ export default class GameBoard extends Component {
 
         const startIcon = this.state.start ? (this.state.pause ? "step-forward" : "pause-circle") : "caret-right";
         const startClickFunction = this.state.start ? this.pauseGame : this.startGame;
+        const { whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
 
         return (
             <div>
@@ -377,9 +388,11 @@ export default class GameBoard extends Component {
                             />
                         </div>
 
-                        <div style={{ margin: 20 }}>
-                            <Progress showInfo={false} strokeWidth={20} strokeColor="square" strokeLinecap="round" percent={this.state.progress} />
-                        </div>
+                        {whiteTimeLimit && blackTimeLimit? 
+                            <div style={{ margin: 20 }}>
+                                <Progress showInfo={false} strokeWidth={20} strokeColor="square" strokeLinecap="round" percent={this.state.progress} />
+                            </div> : null}
+
                     </Col>
                     <Col span={10} offset={1}>
                         <GameInfoBoard gameInfo={this.state} />

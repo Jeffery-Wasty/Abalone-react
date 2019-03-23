@@ -48,6 +48,7 @@ export default class DrawGameBoard extends Component {
                         points={getBaseBoardCornerCoordinate(boardArray[30], hexSize)}
                         fill='#bb4d00'
                         stroke="#000"
+                        strokeWidth="1%"
                     />
 
                     {boardArray.map((center, key) =>
