@@ -3,7 +3,7 @@ import { Card, Col, Row, Statistic } from 'antd';
 
 const gridStyle = {
     width: '50%',
-    textAlign: 'center',
+    textAlign: 'center'
 };
 
 export default class GameResult extends Component {
@@ -14,14 +14,14 @@ export default class GameResult extends Component {
         if (gameType === "pvp") {
             title = player === 1 ? "White" : "Black";
         } else if (gameType === "pve" && playerColor === 1) {
-            title =  player === 1 ? "White (Player)" : "Black (AI)";
+            title = player === 1 ? "White (Player)" : "Black (AI)";
         } else if (gameType === "pve" && playerColor === 2) {
-            title =  player === 1 ? "White (AI)" : "Black (Player)";
+            title = player === 1 ? "White (AI)" : "Black (Player)";
         } else {
-            title =  player === 1 ? "White (AI)" : "Black (AI)";
+            title = player === 1 ? "White (AI)" : "Black (AI)";
         }
 
-        if(player === this.getWinner()){
+        if (player === this.getWinner()) {
             title += " - WINNER!!!"
         }
 
@@ -32,9 +32,9 @@ export default class GameResult extends Component {
         const { curState } = this.props.gameInfo;
         const whiteMarbleNum = curState.filter(color => color === 1).length;
         const blackMarbleNum = curState.filter(color => color === 2).length;
-        if(whiteMarbleNum - blackMarbleNum === 0){
+        if (whiteMarbleNum - blackMarbleNum === 0) {
             const diff = this.prepareSummary(2).totalTimeTaken - this.prepareSummary(1).totalTimeTaken;
-            if(diff === 0){
+            if (diff === 0) {
                 return 0;
             } else {
                 return diff > 0 ? 1 : 2;
@@ -48,13 +48,18 @@ export default class GameResult extends Component {
         const { moveHistory, curState } = this.props.gameInfo;
         const playerHistory = moveHistory.filter(history => history.turn % 2 === (player - 1));
 
-        const totalMoves = playerHistory.length? playerHistory.length : 0;        
-        const totalTimeTaken = playerHistory.length && playerHistory[0].time? 
-                Math.round(playerHistory.reduce((sum, action) => sum + action.time, 0) * 100) / 100 : 0;
-        const avgTime = totalTimeTaken? Math.round(totalTimeTaken / totalMoves * 100) / 100 : 0;
+        const totalMoves = playerHistory.length ? playerHistory.length : 0;
+        const totalTimeTaken = playerHistory.length && playerHistory[0].time ?
+            Math.round(playerHistory.reduce((sum, action) => sum + action.time, 0) * 100) / 100 : 0;
+        const avgTime = totalTimeTaken ? Math.round(totalTimeTaken / totalMoves * 100) / 100 : 0;
         const score = 14 - curState.filter(color => color === (3 - player)).length;
 
         return { totalMoves, totalTimeTaken, score, avgTime };
+    }
+
+    getPlayerTitleStyle = (player) => {
+        const color = (player === 1) ? "#fff" : "#000";
+        return { textAlign: 'center', backgroundColor: "#f57c00", color, fontFamily: `"Comic Sans MS", cursive, sans-serif` }
     }
 
     render() {
@@ -62,10 +67,10 @@ export default class GameResult extends Component {
         const resultBlack = this.prepareSummary(2);
         return (
             <div>
-                <Row>
+                <Row >
                     <Col span={9} offset={2}>
-                        <Card title={this.getPlayerName(2)} headStyle={{ textAlign: 'center' }}>
-                            <Card.Grid style={gridStyle}>
+                        <Card title={this.getPlayerName(2)} headStyle={this.getPlayerTitleStyle(2)} >
+                            <Card.Grid style={gridStyle} >
                                 <Statistic title="Score" value={resultBlack.score} />
                             </Card.Grid>
                             <Card.Grid style={gridStyle}>
@@ -75,13 +80,13 @@ export default class GameResult extends Component {
                                 <Statistic title="Total Moves" value={resultBlack.totalMoves} />
                             </Card.Grid>
                             <Card.Grid style={gridStyle}>
-                                <Statistic title="Average Time" value={resultBlack.avgTime} suffix="s"/>
+                                <Statistic title="Average Time" value={resultBlack.avgTime} suffix="s" />
                             </Card.Grid>
                         </Card>
                     </Col>
 
                     <Col span={9} offset={2}>
-                        <Card title={this.getPlayerName(1)} headStyle={{ textAlign: 'center' }} >
+                        <Card title={this.getPlayerName(1)} headStyle={this.getPlayerTitleStyle(1)} >
                             <Card.Grid style={gridStyle}>
                                 <Statistic title="Score" value={resultWhite.score} />
                             </Card.Grid>
@@ -92,7 +97,7 @@ export default class GameResult extends Component {
                                 <Statistic title="Total Moves" value={resultWhite.totalMoves} />
                             </Card.Grid>
                             <Card.Grid style={gridStyle}>
-                                <Statistic title="Average Time" value={resultWhite.avgTime} suffix="s"/>
+                                <Statistic title="Average Time" value={resultWhite.avgTime} suffix="s" />
                             </Card.Grid>
                         </Card>
                     </Col>

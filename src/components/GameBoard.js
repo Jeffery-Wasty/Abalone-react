@@ -8,6 +8,7 @@ import { Button, Col, Progress, Row, Modal, message, Spin } from 'antd';
 import GameInfoBoard from './GameInfoBoard';
 import GameResult from './GameResult';
 import DrawGameBoard, { boardArray } from './DrawGameBoard';
+import resultBk from '../image/result.jpg';
 
 export default class GameBoard extends Component {
 
@@ -464,6 +465,7 @@ export default class GameBoard extends Component {
         const startIcon = this.state.start ? (this.state.pause ? "step-forward" : "pause-circle") : "caret-right";
         const startClickFunction = this.state.start ? this.pauseGame : this.startGame;
         const { timeLimitChecked, moveLimitChecked, whiteMoveLimit, blackMoveLimit } = this.props.gameSettings;
+        const resultTitleStyle = { fontSize: 20, color: "#f57c00", fontWeight: "bold", fontFamily: `"Comic Sans MS", cursive, sans-serif` };
 
         return (
             <div>
@@ -521,33 +523,37 @@ export default class GameBoard extends Component {
                     cancelText="Cancel"
                 >
                     Server disconnected. Do you want to re-connect?
-                </Modal>
+                </Modal>               
 
                 <Modal
-                    title="Game Result"
+                    title={<div style={resultTitleStyle}>Game Result </div>}
                     visible={this.state.gameResultVisible}
                     maskClosable={false}
                     closable={false}
                     width={1200}
+                    bodyStyle={{backgroundImage: `url(${resultBk})`}}
                     centered
                     footer={[
-                        <Row gutter={24} key="buttons">
-                            {!moveLimitChecked || (moveLimitChecked && this.state.turn <= whiteMoveLimit + blackMoveLimit) ?
-                                <Col span={6} offset={2}>
-                                    <Button type="primary" onClick={this.closeResultWindow} block>Continue</Button>
-                                </Col> :
-                                <Col span={10}></Col>}
-                            <Col span={6} offset={1}>
-                                <Button onClick={this.resetGame} block>Play another game</Button>
-                            </Col>
-                            <Col span={6} offset={1}>
-                                <Button type="danger" onClick={this.leaveGame} block>Leave game</Button>
-                            </Col>
-                        </Row>
+                        <div key="buttons" >
+                            <Row gutter={24} >
+                                {!moveLimitChecked || (moveLimitChecked && this.state.turn <= whiteMoveLimit + blackMoveLimit) ?
+                                    <Col span={6} offset={2}>
+                                        <Button type="primary" onClick={this.closeResultWindow} block>Continue</Button>
+                                    </Col> :
+                                    <Col span={10}></Col>}
+                                <Col span={6} offset={1}>
+                                    <Button onClick={this.resetGame} block>Play another game</Button>
+                                </Col>
+                                <Col span={6} offset={1}>
+                                    <Button type="danger" onClick={this.leaveGame} block>Leave game</Button>
+                                </Col>
+                            </Row>
+                        </div>                        
                     ]}
                 >
-                    <GameResult gameInfo={this.state} />
+                    <GameResult gameInfo={this.state} />                  
                 </Modal>
+                
             </div>
         )
     }
