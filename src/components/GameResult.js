@@ -75,7 +75,7 @@ export default class GameResult extends Component {
                                 <Statistic title="Total Moves" value={resultBlack.totalMoves} />
                             </Card.Grid>
                             <Card.Grid style={gridStyle}>
-                                <Statistic title="Average Time" value={resultBlack.avgTime} />
+                                <Statistic title="Average Time" value={resultBlack.avgTime} suffix="s"/>
                             </Card.Grid>
                         </Card>
                     </Col>
@@ -92,7 +92,7 @@ export default class GameResult extends Component {
                                 <Statistic title="Total Moves" value={resultWhite.totalMoves} />
                             </Card.Grid>
                             <Card.Grid style={gridStyle}>
-                                <Statistic title="Average Time" value={resultWhite.avgTime} />
+                                <Statistic title="Average Time" value={resultWhite.avgTime} suffix="s"/>
                             </Card.Grid>
                         </Card>
                     </Col>

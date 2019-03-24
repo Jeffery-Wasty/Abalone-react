@@ -35,19 +35,21 @@ export default class GameBoard extends Component {
             ...this.props.gameSettings,
             curState: this.props.gameSettings.boardInitState,
             turn: 1
-        })
+        });
     }
 
     componentDidMount = () => {
+        const { whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
+
         if (this.props.gameSettings.gameType === "pve") {
             AbaloneClient.connect();
         }
-        
-        const { whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
-        if(!whiteTimeLimit && !blackTimeLimit) {
-            this.setState({
-                start: true
-            })
+
+        if (!whiteTimeLimit && !blackTimeLimit) {
+            this.setState(
+                { start: true },
+                () => this.makeAIMove()
+            );
         }
     }
 
@@ -62,47 +64,52 @@ export default class GameBoard extends Component {
     }
 
     clickMarble = (e) => {
-        if (!this.state.start) {
+        const { start, changeInfoArray, turn, supportLine, selectedHex, curState } = this.state;
+        const { gameType, playerColor } = this.props.gameSettings;
+        const color = parseInt(e.target.getAttribute('color'));
+        const position = e.target.getAttribute('location');
+
+        if (!start) {
             return;
         }
 
         //black move in odd turn, white move in even turn
-        if (!this.state.changeInfoArray && this.state.turn % 2 === (2 - parseInt(e.target.getAttribute('color')))) {
-            return;
-        }        
-
-        //AI turn
-        if (!this.state.changeInfoArray && this.props.gameSettings.gameType === "pve" 
-            && this.props.gameSettings.playerColor !== parseInt(e.target.getAttribute('color'))) {
+        if (!changeInfoArray && turn % 2 === (2 - color)) {
             return;
         }
 
-        //location already selected, deselect
-        const selected = this.locationSelected(e.target.getAttribute('location'));
-        if (selected) {
+        //AI turn
+        if (!changeInfoArray && gameType === "pve" && playerColor !== color) {
+            return;
+        }
+
+        //check if clicked marble is selected
+        if (this.locationSelected(position)) {
+            //deselect
             this.setState({ selectedHex: [] });
         } else {
-            if (this.state.supportLine.length) {
+            if (supportLine.length) {
                 //push marble
                 this.setState({ selectedHex: [], supportLine: [] });
-                this.makeMove(this.state.changeInfoArray);
-
+                this.makeMove(changeInfoArray);
             } else {
-                if (this.state.selectedHex.length >= 3) {
-                    this.setState({ selectedHex: [e.target.getAttribute('location')] });
-                } else {
-                    const newSelected = isLegalGroup(this.state.selectedHex, e.target.getAttribute('location'));
-                    this.setState({ selectedHex: newSelected });
-                }
+                //select marbles
+                const newSelected = (selectedHex.length >= 3) ? [position] :
+                    isLegalGroup(selectedHex, position, curState);
+                this.setState({ selectedHex: newSelected });
             }
         }
     }
 
-    clickHex = (e) => {
-        if (this.state.supportLine.length) {
+    clickHex = () => {
+        const { supportLine, changeInfoArray } = this.state;
+        if (supportLine.length) {
             //move marble
-            this.setState({ selectedHex: [], supportLine: [] });
-            this.makeMove(this.state.changeInfoArray);
+            this.setState({
+                selectedHex: [],
+                supportLine: []
+            });
+            this.makeMove(changeInfoArray);
         }
     }
 
@@ -162,8 +169,8 @@ export default class GameBoard extends Component {
         const nextState = getNextState(changeInfoArray, this.state.curState);
         this.updateBoardState(nextState);
 
-        //If pve and AI turn, start AI move
-        if (this.props.gameSettings.gameType === "pve" && (this.state.turn % 2 === (2 - this.state.playerColor))) {
+        //end game if exceeds turn limit
+        if (!this.isGameEnd()) {
             this.makeAIMove();
         }
     }
@@ -171,14 +178,13 @@ export default class GameBoard extends Component {
     updateMoveHistoryBoard = (changeInfoArray) => {
 
         //update move history
-        let marbles = []
+        let marbles = [];
 
         changeInfoArray.forEach(element => {
             marbles.push([element.originLocation]);
         })
 
-        const {whiteTimeLimit, blackTimeLimit} = this.props.gameSettings;
-
+        const { whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
         const timeLimit = this.state.turn % 2 === 0 ? whiteTimeLimit : blackTimeLimit
 
         let action = {
@@ -213,29 +219,43 @@ export default class GameBoard extends Component {
         }));
 
         this.startTimer();
-     
+
+    }
+
+    isGameEnd = () => {
+        const { whiteMoveLimit, blackMoveLimit } = this.props.gameSettings;
+        const { turn } = this.state;
+        if (turn > whiteMoveLimit + blackMoveLimit && whiteMoveLimit && whiteMoveLimit) {
+            this.stopGame();
+            return true;
+        } else {
+            return false;
+        }
     }
 
     makeAIMove = () => {
-        const { whiteMoveLimit, blackMoveLimit, whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
+        const { gameType, whiteMoveLimit, blackMoveLimit, whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
+        const { turn, playerColor, curState, start } = this.state;
 
-        const timeLimit = this.state.turn % 2 === 0 ? whiteTimeLimit : blackTimeLimit;
-        const moveLimit = this.state.playerColor === 2? whiteMoveLimit : blackMoveLimit;
+        if (!start || gameType === "pvp" || (turn % 2 !== (2 - playerColor))) {
+            return;
+        }
 
+        const timeLimit = turn % 2 === 0 ? whiteTimeLimit : blackTimeLimit;
+        const turnLimit = playerColor === 2 ? whiteMoveLimit : blackMoveLimit;
         const packet = {
-            turnLimit: moveLimit, 
+            turnLimit,
             timeLimit,
-            state: this.state.curState,
-            turn: this.state.turn
+            turn,
+            state: curState,
         };
 
         let that = this;
 
         AbaloneClient.nextMove(packet).then(({ action }) => {
-            const nextState = getNextStateByAIAction(this.state.curState, action);
+            const nextState = getNextStateByAIAction(curState, action);
             that.updateBoardState(nextState);
         });
-
 
     }
 
@@ -269,7 +289,7 @@ export default class GameBoard extends Component {
         } else {
             this.setState({ pause: true })
         }
-    }    
+    }
 
     leaveGame = () => {
         this.props.stopGame();
@@ -281,6 +301,7 @@ export default class GameBoard extends Component {
         }
 
         this.setState({
+            start: false,
             gameResultVisible: true
         })
     }
@@ -303,7 +324,7 @@ export default class GameBoard extends Component {
 
         const { whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
 
-        if(!whiteTimeLimit && !blackTimeLimit) {
+        if (!whiteTimeLimit && !blackTimeLimit) {
             this.setState({
                 start: true
             })
@@ -312,7 +333,7 @@ export default class GameBoard extends Component {
                 start: false
             })
         }
-        
+
     }
 
     undoLastMove = () => {
@@ -335,7 +356,7 @@ export default class GameBoard extends Component {
     startTimer = () => {
         const { whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
 
-        if(!whiteTimeLimit && !blackTimeLimit) {
+        if (!whiteTimeLimit && !blackTimeLimit) {
             return;
         }
 
@@ -392,12 +413,12 @@ export default class GameBoard extends Component {
                     <Col span={11} offset={1}>
                         <div style={{ margin: 30 }}>
                             <Row gutter={4}>
-                                {whiteTimeLimit && blackTimeLimit? 
+                                {whiteTimeLimit && blackTimeLimit ?
                                     <Col span={5} offset={1}>
                                         <Button type="primary" size="large" icon={startIcon} onClick={startClickFunction} block>
                                             {this.state.start ? (this.state.pause ? "Resume" : "Pause") : "Start"}
                                         </Button>
-                                    </Col>: <Col span={5} offset={1}></Col>}
+                                    </Col> : <Col span={5} offset={1}></Col>}
 
                                 <Col span={5}>
                                     <Button type="danger" size="large" icon="stop" onClick={this.stopGame} block> Stop </Button>
@@ -422,7 +443,7 @@ export default class GameBoard extends Component {
                             />
                         </div>
 
-                        {whiteTimeLimit && blackTimeLimit? 
+                        {whiteTimeLimit && blackTimeLimit ?
                             <div style={{ margin: 20 }}>
                                 <Progress showInfo={false} strokeWidth={20} strokeColor="square" strokeLinecap="round" percent={this.state.progress} />
                             </div> : null}
@@ -449,7 +470,7 @@ export default class GameBoard extends Component {
                     visible={this.state.gameResultVisible}
                     maskClosable={false}
                     closable={false}
-                    width={1200}    
+                    width={1200}
                     centered
                     footer={[
                         <Row gutter={24} key="buttons">
@@ -462,7 +483,7 @@ export default class GameBoard extends Component {
                         </Row>
                     ]}
                 >
-                    <GameResult gameInfo={this.state}/>
+                    <GameResult gameInfo={this.state} />
                 </Modal>
             </div>
         )

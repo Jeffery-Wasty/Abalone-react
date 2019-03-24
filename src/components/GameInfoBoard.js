@@ -5,7 +5,19 @@ import HistoryBoard from './HistoryBoard';
 export default class GameInfoBoard extends Component {
   state = {
     historyVisible: false
+  }  
+
+  viewHistory = () => {
+    this.setState({
+      historyVisible: true,
+    });
   }
+
+  closeHistory = () => {
+    this.setState({
+      historyVisible: false,
+    });
+  };
 
   getTimer = (player) => {
     let timer = 0;
@@ -58,8 +70,13 @@ export default class GameInfoBoard extends Component {
   getPlayerTurnInfo = (player) => {
     const { whiteMoveLimit, blackMoveLimit, turn } = this.props.gameInfo;
     const playerTurn = player === 1? whiteMoveLimit - Math.floor((turn - 1)/2) : blackMoveLimit - Math.round((turn -1)/2);
-    return player === 1? <Statistic value={playerTurn} suffix={` / ${whiteMoveLimit}`} /> :
+
+    if(whiteMoveLimit && blackMoveLimit) {
+      return player === 1? <Statistic value={playerTurn} suffix={` / ${whiteMoveLimit}`} /> :
                 <Statistic value={playerTurn} suffix={` / ${blackMoveLimit}`} />;
+    } else {
+      return null;
+    }    
   }
 
   getPlayerMoveHistory = (player) => {
@@ -69,18 +86,6 @@ export default class GameInfoBoard extends Component {
 
     return moveHistory;
   }
-
-  viewHistory = () => {
-    this.setState({
-      historyVisible: true,
-    });
-  }
-
-  closeHistory = () => {
-    this.setState({
-      historyVisible: false,
-    });
-  };
 
   getGameInfoBoardStyle = () => {
     const { turn } = this.props.gameInfo;
@@ -97,8 +102,27 @@ export default class GameInfoBoard extends Component {
     return { whiteBkStyle, blackBkStyle, whiteTimelineStyle, blackTimelineStyle, blackHeadStyle, whiteHeadStyle };
   }
 
+  getGameTurnNumber = () => {
+    const { whiteMoveLimit, blackMoveLimit, turn } = this.props.gameInfo;
+    if(turn > whiteMoveLimit + blackMoveLimit && blackMoveLimit && whiteMoveLimit){
+      return whiteMoveLimit + blackMoveLimit
+    } else {
+      return turn;
+    }
+  }
+
+  getGameTurnSuffix = () => {
+    const { whiteMoveLimit, blackMoveLimit } = this.props.gameInfo;
+    
+    if(whiteMoveLimit && blackMoveLimit){
+      return ` / ${whiteMoveLimit + blackMoveLimit}`;
+    } else {
+      return null;
+    }
+  }
+
   render() {
-    const { turn, whiteMoveLimit, blackMoveLimit, moveHistory, whiteTimeLimit, blackTimeLimit } = this.props.gameInfo;
+    const { moveHistory, whiteTimeLimit, blackTimeLimit } = this.props.gameInfo;
     const { whiteBkStyle, blackBkStyle, whiteTimelineStyle, blackTimelineStyle, blackHeadStyle, whiteHeadStyle } = this.getGameInfoBoardStyle();
 
     return (
@@ -106,7 +130,7 @@ export default class GameInfoBoard extends Component {
         <Row>
           <div style={{ margin: 30, float: "right" }}>
             <Statistic
-              value={turn} prefix={`Game Turn: `} suffix={` / ${whiteMoveLimit + blackMoveLimit}`}
+              value={this.getGameTurnNumber()} prefix={`Game Turn: `} suffix={this.getGameTurnSuffix()}
               valueStyle={{ fontSize: 40, color: "#fff", fontFamily: `"Comic Sans MS", cursive, sans-serif` }} />
           </div>
         </Row>

@@ -135,7 +135,7 @@ export const getMoveDirection = (selectedHex, targetLocation) => {
     return moveDirection;
 }
 
-export const isLegalGroup = (selectedArray, newElement) => {
+export const isLegalGroup = (selectedArray, newElement, curState) => {
     let valid = false;
     let validArray = [];
     if (!selectedArray.length) {
@@ -143,26 +143,33 @@ export const isLegalGroup = (selectedArray, newElement) => {
         validArray = [newElement];
     } else if (selectedArray.length === 1) {
         for (let i = 0; i < 6; i++) {
-            if (parseInt(destTable[selectedArray[0]][i]) === parseInt(newElement)) {
+            if (destTable[selectedArray[0]][i] === parseInt(newElement)) {
                 valid = true;
-                validArray = parseInt(selectedArray[0]) > parseInt(newElement) ? [newElement, selectedArray[0]] : [selectedArray[0], newElement];
-            } else if (parseInt(destTable[selectedArray[0]][i]) !== -1 && parseInt(destTable[destTable[selectedArray[0]][i]][i]) === parseInt(newElement)) {
+                validArray = parseInt(selectedArray[0]) > parseInt(newElement) ? 
+                            [newElement, selectedArray[0]] : 
+                            [selectedArray[0], newElement];
+            } else if (destTable[selectedArray[0]][i] !== -1 && 
+                       curState[destTable[selectedArray[0]][i]] === curState[newElement] && 
+                       destTable[destTable[selectedArray[0]][i]][i] === parseInt(newElement)) {
                 valid = true;
-                validArray = parseInt(selectedArray[0]) > parseInt(newElement) ? [newElement, destTable[selectedArray[0]][i].toString(), selectedArray[0]]
-                    : [selectedArray[0], destTable[selectedArray[0]][i].toString(), newElement];
+                validArray = parseInt(selectedArray[0]) > parseInt(newElement) ? 
+                            [newElement, destTable[selectedArray[0]][i].toString(), selectedArray[0]] : 
+                            [selectedArray[0], destTable[selectedArray[0]][i].toString(), newElement];
             }
         }
     } else if (selectedArray.length === 2) {
         if (parseInt(selectedArray[0]) > parseInt(newElement)) {
             destTable[selectedArray[1]].forEach((location, index) => {
-                if (parseInt(location) === parseInt(selectedArray[0]) && parseInt(destTable[selectedArray[0]][index]) === parseInt(newElement)) {
+                if (parseInt(location) === parseInt(selectedArray[0]) && 
+                    destTable[selectedArray[0]][index] === parseInt(newElement)) {
                     valid = true;
                     validArray = [newElement, ...selectedArray]
                 }
             })
         } else {
             destTable[selectedArray[0]].forEach((location, index) => {
-                if (parseInt(location) === parseInt(selectedArray[1]) && parseInt(destTable[selectedArray[1]][index]) === parseInt(newElement)) {
+                if (parseInt(location) === parseInt(selectedArray[1]) && 
+                    destTable[selectedArray[1]][index] === parseInt(newElement)) {
                     valid = true;
                     validArray = [...selectedArray, newElement]
                 }
@@ -243,22 +250,22 @@ export const getChangeInfoArray = (selectedHex, moveDirection, boardArray, marbl
             changeInfoArray.push({ index: 2, element: e, originLocation: parseInt(selectedHex[2]) })
         }
 
-        if(marbleToPush.length >=1 && parseInt(e.getAttribute('location')) === marbleToPush[0]) {
+        if (marbleToPush.length >= 1 && parseInt(e.getAttribute('location')) === marbleToPush[0]) {
             changeInfoArray.push({ index: -1, element: e, originLocation: marbleToPush[0] })
-        } else if (marbleToPush.length >=2 && parseInt(e.getAttribute('location')) === marbleToPush[1]) {
+        } else if (marbleToPush.length >= 2 && parseInt(e.getAttribute('location')) === marbleToPush[1]) {
             changeInfoArray.push({ index: -2, element: e, originLocation: marbleToPush[1] })
         }
     })
 
     changeInfoArray.forEach((marble, index) => {
         const destLocation = destTable[marble.originLocation][moveDirection];
-        if(destLocation === -1){
+        if (destLocation === -1) {
             changeInfoArray[index].end = calculateOutBoundEndpoint(boardArray[marble.originLocation], moveDirection, boardArray);
         } else {
             changeInfoArray[index].end = boardArray[destLocation];
         }
         changeInfoArray[index].destLocation = destLocation;
-        changeInfoArray[index].start = boardArray[marble.originLocation];        
+        changeInfoArray[index].start = boardArray[marble.originLocation];
         changeInfoArray[index].direction = moveDirection;
     })
 
@@ -267,42 +274,42 @@ export const getChangeInfoArray = (selectedHex, moveDirection, boardArray, marbl
 
 const calculateOutBoundEndpoint = (start, moveDirection, boardArray) => {
     let diffX = 0;
-    let diffY = 0;    
+    let diffY = 0;
     let point;
 
-    switch(moveDirection){
+    switch (moveDirection) {
         case 0:
             diffX = boardArray[6].x - boardArray[5].x;
             diffY = boardArray[6].y - boardArray[5].y;
-            point = Point(start.x - diffX, start.y- diffY);
+            point = Point(start.x - diffX, start.y - diffY);
             break;
         case 1:
             diffX = boardArray[6].x - boardArray[0].x;
             diffY = boardArray[6].y - boardArray[0].y;
-            point = Point(start.x - diffX, start.y- diffY);
+            point = Point(start.x - diffX, start.y - diffY);
             break;
         case 2:
             diffX = boardArray[6].x - boardArray[1].x;
             diffY = boardArray[6].y - boardArray[1].y;
-            point = Point(start.x - diffX, start.y- diffY);
+            point = Point(start.x - diffX, start.y - diffY);
             break;
         case 3:
             diffX = boardArray[6].x - boardArray[12].x;
             diffY = boardArray[6].y - boardArray[12].y;
-            point = Point(start.x - diffX, start.y- diffY);
+            point = Point(start.x - diffX, start.y - diffY);
             break;
         case 4:
             diffX = boardArray[6].x - boardArray[13].x;
             diffY = boardArray[6].y - boardArray[13].y;
-            point = Point(start.x - diffX, start.y- diffY);
+            point = Point(start.x - diffX, start.y - diffY);
             break;
         case 5:
             diffX = boardArray[6].x - boardArray[7].x;
             diffY = boardArray[6].y - boardArray[7].y;
-            point = Point(start.x - diffX, start.y- diffY);
+            point = Point(start.x - diffX, start.y - diffY);
             break;
         default:
-            point = Point(0,0);
+            point = Point(0, 0);
             break;
     }
 
@@ -319,75 +326,82 @@ export const isLegalMove = (selectedHex, moveDirection, boardArray, curState) =>
             legalMove = true;
         }
     } else if (selectedHex.length === 2) {
-        if (destTable[selectedHex[0]][5 - moveDirection] !== parseInt(selectedHex[1]) && destTable[selectedHex[0]][moveDirection] !== parseInt(selectedHex[1])) {
+        if (destTable[selectedHex[0]][5 - moveDirection] !== parseInt(selectedHex[1]) &&
+            destTable[selectedHex[0]][moveDirection] !== parseInt(selectedHex[1])) {
             //side move
-            if (!curState[destTable[selectedHex[0]][moveDirection]] && !curState[destTable[selectedHex[1]][moveDirection]]) {
+            if (curState[destTable[selectedHex[0]][moveDirection]] === 0 &&
+                curState[destTable[selectedHex[1]][moveDirection]] === 0) {
                 //both marble move direction is clean, okay to move
                 legalMove = true;
             }
         } else {
             //inline move
 
-            const directionIndex = moveDirection < 3? 0 : 1;
+            const directionIndex = moveDirection < 3 ? 0 : 1;
             const nextMarblePosition = destTable[selectedHex[directionIndex]][moveDirection];
-            if(nextMarblePosition !== -1) {
+            if (nextMarblePosition !== -1) {
                 const nextTwoMarblePosition = destTable[nextMarblePosition][moveDirection];
 
-                if(!curState[nextMarblePosition]){
+                if (!curState[nextMarblePosition]) {
                     //clean path
-                    legalMove=true;
-                } else if (curState[nextMarblePosition] !== curState[selectedHex[0]] && 
-                    (!curState[nextTwoMarblePosition] || nextTwoMarblePosition === -1)){
+                    legalMove = true;
+                } else if (curState[nextMarblePosition] !== curState[selectedHex[0]] &&
+                    (!curState[nextTwoMarblePosition] || nextTwoMarblePosition === -1)) {
                     //next one is opponent marble and next two is empty
-                    legalMove=true;
+                    legalMove = true;
                     marbleToPush = [nextMarblePosition];
-                }  
+                }
             }
-         
+
 
         }
     } else if (selectedHex.length === 3) {
-        if(destTable[selectedHex[0]][5 - moveDirection] !== parseInt(selectedHex[1]) && destTable[selectedHex[0]][moveDirection] !== parseInt(selectedHex[1])){
+        if (destTable[selectedHex[0]][5 - moveDirection] !== parseInt(selectedHex[1])
+            && destTable[selectedHex[0]][moveDirection] !== parseInt(selectedHex[1])) {
             //side move
-            if (!curState[destTable[selectedHex[0]][moveDirection]] && !curState[destTable[selectedHex[1]][moveDirection]] && !curState[destTable[selectedHex[2]][moveDirection]]) {
+            if (!curState[destTable[selectedHex[0]][moveDirection]] === 0
+                && !curState[destTable[selectedHex[1]][moveDirection]] === 0
+                && curState[destTable[selectedHex[2]][moveDirection]] === 0) {
                 //both marble move direction is clean, okay to move
                 legalMove = true;
             }
         } else {
             //inline move
 
-            const directionIndex = moveDirection < 3? 0 : 2;
+            const directionIndex = moveDirection < 3 ? 0 : 2;
             const nextMarblePosition = destTable[selectedHex[directionIndex]][moveDirection];
-            if(nextMarblePosition !== -1){ 
-                const nextTwoMarblePosition = destTable[nextMarblePosition][moveDirection]; 
+            if (nextMarblePosition !== -1) {
+                const nextTwoMarblePosition = destTable[nextMarblePosition][moveDirection];
 
-                if(!curState[nextMarblePosition]){
+                if (!curState[nextMarblePosition]) {
                     //clean path
-                    legalMove=true;
+                    legalMove = true;
                 } else {
-                    if(nextTwoMarblePosition === -1){
-                        if (curState[nextMarblePosition] !== curState[selectedHex[0]] ) {
+                    if (nextTwoMarblePosition === -1) {
+                        if (curState[nextMarblePosition] !== curState[selectedHex[0]]) {
                             //push one out of bound
-                            legalMove=true;
+                            legalMove = true;
                             marbleToPush = [nextMarblePosition];
-                        }                    
+                        }
                     } else {
-                        if(curState[nextMarblePosition] !== curState[selectedHex[0]] && !curState[nextTwoMarblePosition]){
+                        if (curState[nextMarblePosition] !== curState[selectedHex[0]]
+                            && !curState[nextTwoMarblePosition]) {
                             //push one
-                            legalMove=true;
+                            legalMove = true;
                             marbleToPush = [nextMarblePosition];
-                        }                    
+                        }
                         const nextThreeMarblePosition = destTable[nextTwoMarblePosition][moveDirection];
-    
-                        if (curState[nextMarblePosition] !== curState[selectedHex[0]] && curState[nextTwoMarblePosition] !== curState[selectedHex[0]] 
+
+                        if (curState[nextMarblePosition] !== curState[selectedHex[0]]
+                            && curState[nextTwoMarblePosition] !== curState[selectedHex[0]]
                             && (!curState[nextThreeMarblePosition] || nextThreeMarblePosition === -1)) {
                             //push two
-                            legalMove=true;
+                            legalMove = true;
                             marbleToPush = [nextMarblePosition, nextTwoMarblePosition];
-                        } 
-                    } 
-                }  
-                   
+                        }
+                    }
+                }
+
             }
 
         }
@@ -450,10 +464,10 @@ export const generateHistoryText = (history) => {
     text += `Turn ${history.turn}: `;
 
     history.marbles.forEach(marble => {
-      text += `${boardNameArray[marble]} `;
+        text += `${boardNameArray[marble]} `;
     })
     text += `${getArrowSymbol(history.direction)} - `;
     text += `Time taken: ${Math.round(history.time)}s`;
 
     return text;
-  }
+}
