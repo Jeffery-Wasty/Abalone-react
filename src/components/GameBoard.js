@@ -195,7 +195,7 @@ export default class GameBoard extends Component {
         AbaloneClient.nextMove(packet).then( async ({ action }) => {
             const nextState = getNextStateByAIAction(curState, action);
             const changeInfoArray = getChangeInfoArrayFromAIMove(action, curState, boardArray);
-            console.log(changeInfoArray);
+
             await moveMarbles(changeInfoArray);
 
             that.updateMoveHistoryBoard(changeInfoArray);            
