@@ -39,6 +39,8 @@ export const getArrowSymbol = (direction) => {
     }
     return symbol;
 }
+    
+export const locationSelected = (selectedHex, location) => selectedHex.find(e =>  parseInt(e) === parseInt(location));
 
 export const generateBoardCoordArray = (start_point, size) => {
     let centerArray = [];
@@ -497,3 +499,4 @@ export const generateHistoryText = (history) => {
 
     return text;
 }
+

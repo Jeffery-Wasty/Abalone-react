@@ -9,16 +9,6 @@ export default class HistoryBoard extends Component {
         selectedHistory: null
     }
 
-    locationSelected = (location) => {
-        let found = false;
-        if (this.state.selectedHistory.marbles.length) {
-            found = this.state.selectedHistory.marbles.find(el => {
-                return parseInt(el) === parseInt(location);
-            })
-        }
-        return found;
-    }
-
     loadHistoryBoard = (e) => {
 
         const { moveHistory } = this.props;
@@ -33,6 +23,8 @@ export default class HistoryBoard extends Component {
         generateSupportlineTexts(this.state.selectedHistory.marbles, boardArray, this.state.selectedHistory.direction) : null;
 
     render() {
+        const { selectedHistory } = this.state;
+
         return (
             <div>
                 <Row gutter={16}>
@@ -53,10 +45,10 @@ export default class HistoryBoard extends Component {
                         />
                     </Col>
                     <Col span={16}>
-                        {this.state.selectedHistory ?
+                        {selectedHistory ?
                             <DrawGameBoard
-                                curState={this.state.selectedHistory.state}
-                                locationSelected={this.locationSelected}
+                                selectedHex={selectedHistory.marbles}
+                                boardState={selectedHistory.boardState}
                                 supportLine={this.generateSupportLine()}
                             /> : null}
                     </Col>

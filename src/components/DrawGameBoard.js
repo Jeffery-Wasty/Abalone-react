@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { getHexCornerCoordinate, getBaseBoardCornerCoordinate, generateBoardCoordArray } from '../utils/UtilFunctions';
+import { getHexCornerCoordinate, getBaseBoardCornerCoordinate, generateBoardCoordArray, locationSelected } from '../utils/UtilFunctions';
 
 export const start_point = { x: 75, y: 25 };
 export const circleRadius = 9;
@@ -8,6 +8,8 @@ export const boardArray = generateBoardCoordArray(start_point, hexSize);
 
 export default class DrawGameBoard extends Component {
     render() {
+        const { boardState, selectedHex, mouseOverHex, mouseOutHex, clickMarble, clickHex } = this.props;
+
         return (
             <div>
                 <svg id="test-polygon" viewBox="0 0 240 200" style={{ transform: 'perspective(1000px) rotateX(5deg)' }}>
@@ -58,27 +60,27 @@ export default class DrawGameBoard extends Component {
                             cx={center.x}
                             cy={center.y}
                             points={getHexCornerCoordinate(center, hexSize)}
-                            fill={this.props.locationSelected(key) ? '#d50000' : '#f57c00'}
+                            fill={ locationSelected(selectedHex, key) ? '#d50000' : '#f57c00'}
                             stroke="#000"
-                            onMouseOver={this.props.mouseOverHex}
-                            onMouseOut={this.props.mouseOutHex}
-                            onClick={this.props.clickHex}
+                            onMouseOver={mouseOverHex}
+                            onMouseOut={mouseOutHex}
+                            onClick={clickHex}
                         />
                     )}
 
                     {boardArray.map((center, key) =>
-                        this.props.curState[key] !== 0 ?
+                        boardState[key] !== 0 ?
                             <circle
                                 key={key}
-                                onClick={this.props.clickMarble}
-                                onMouseOver={this.props.mouseOverHex}
-                                onMouseOut={this.props.mouseOutHex}
+                                onClick={clickMarble}
+                                onMouseOver={mouseOverHex}
+                                onMouseOut={mouseOutHex}
                                 location={key}
-                                color={this.props.curState[key]}
+                                color={boardState[key]}
                                 cx={center.x}
                                 cy={center.y}
                                 r={circleRadius}
-                                fill={(this.props.curState[key] === 1) ? "url(#rgradwhite)" : "url(#rgradblack)"}
+                                fill={(boardState[key] === 1) ? "url(#rgradwhite)" : "url(#rgradblack)"}
                             />
                             : null
                     )}
