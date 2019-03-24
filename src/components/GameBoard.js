@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import {
     isLegalGroup, moveMarbles, getMoveDirection, isLegalMove, generateHistoryText,
-    getNextStateByAIAction, getNextState, generateSupportlineTexts,
+    getNextStateByAIAction, getNextState, generateSupportlineTexts, getChangeInfoArrayFromAIMove
 } from '../utils/UtilFunctions';
 import AbaloneClient from '../utils/AbaloneClient';
 import { Button, Col, Progress, Row, Modal, message } from 'antd';
@@ -173,6 +173,37 @@ export default class GameBoard extends Component {
         }
     }
 
+    makeAIMove = () => {
+        const { gameType, whiteMoveLimit, blackMoveLimit, whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
+        const { turn, playerColor, curState } = this.state;
+
+        if (gameType === "pvp" || (turn % 2 !== (2 - playerColor))) {
+            return;
+        }
+
+        const timeLimit = whiteTimeLimit && blackTimeLimit ? (turn % 2 === 0 ? whiteTimeLimit : blackTimeLimit) : 10;
+        const turnLimit = whiteMoveLimit && blackMoveLimit ? (playerColor === 2 ? whiteMoveLimit : blackMoveLimit) : 80;
+        const packet = {
+            turnLimit,
+            timeLimit,
+            turn,
+            state: curState,
+        };
+
+        let that = this;
+
+        AbaloneClient.nextMove(packet).then( async ({ action }) => {
+            const nextState = getNextStateByAIAction(curState, action);
+            const changeInfoArray = getChangeInfoArrayFromAIMove(action, curState, boardArray);
+            console.log(changeInfoArray);
+            await moveMarbles(changeInfoArray);
+
+            that.updateMoveHistoryBoard(changeInfoArray);            
+            that.updateBoardState(nextState);
+        });
+
+    }
+
     updateMoveHistoryBoard = (changeInfoArray) => {
 
         //update move history
@@ -229,32 +260,6 @@ export default class GameBoard extends Component {
         } else {
             return false;
         }
-    }
-
-    makeAIMove = () => {
-        const { gameType, whiteMoveLimit, blackMoveLimit, whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
-        const { turn, playerColor, curState } = this.state;
-
-        if (gameType === "pvp" || (turn % 2 !== (2 - playerColor))) {
-            return;
-        }
-
-        const timeLimit = whiteTimeLimit && blackTimeLimit ? (turn % 2 === 0 ? whiteTimeLimit : blackTimeLimit) : 10;
-        const turnLimit = whiteMoveLimit && blackMoveLimit ? (playerColor === 2 ? whiteMoveLimit : blackMoveLimit) : 80;
-        const packet = {
-            turnLimit,
-            timeLimit,
-            turn,
-            state: curState,
-        };
-
-        let that = this;
-
-        AbaloneClient.nextMove(packet).then(({ action }) => {
-            const nextState = getNextStateByAIAction(curState, action);
-            that.updateBoardState(nextState);
-        });
-
     }
 
     locationSelected = (location) => {

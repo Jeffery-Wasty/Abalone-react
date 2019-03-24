@@ -5,7 +5,7 @@ import HistoryBoard from './HistoryBoard';
 export default class GameInfoBoard extends Component {
   state = {
     historyVisible: false
-  }  
+  }
 
   viewHistory = () => {
     this.setState({
@@ -30,7 +30,9 @@ export default class GameInfoBoard extends Component {
         timer = this.props.gameInfo.timeLeft
       }
     }
-    return Math.round(timer * 100) / 100;
+
+    const displayTime = Math.round(timer * 100) / 100;
+    return displayTime >= 0 ? displayTime : 0;
   }
 
   calculateGameScore = (player) => {
@@ -69,14 +71,14 @@ export default class GameInfoBoard extends Component {
 
   getPlayerTurnInfo = (player) => {
     const { whiteMoveLimit, blackMoveLimit, turn } = this.props.gameInfo;
-    const playerTurn = player === 1? whiteMoveLimit - Math.floor((turn - 1)/2) : blackMoveLimit - Math.round((turn -1)/2);
+    const playerTurn = player === 1 ? whiteMoveLimit - Math.floor((turn - 1) / 2) : blackMoveLimit - Math.round((turn - 1) / 2);
 
-    if(whiteMoveLimit && blackMoveLimit) {
-      return player === 1? <Statistic value={playerTurn} suffix={` / ${whiteMoveLimit}`} /> :
-                <Statistic value={playerTurn} suffix={` / ${blackMoveLimit}`} />;
+    if (whiteMoveLimit && blackMoveLimit) {
+      return player === 1 ? <Statistic value={playerTurn} suffix={` / ${whiteMoveLimit}`} /> :
+        <Statistic value={playerTurn} suffix={` / ${blackMoveLimit}`} />;
     } else {
       return null;
-    }    
+    }
   }
 
   getPlayerMoveHistory = (player) => {
@@ -104,7 +106,7 @@ export default class GameInfoBoard extends Component {
 
   getGameTurnNumber = () => {
     const { whiteMoveLimit, blackMoveLimit, turn } = this.props.gameInfo;
-    if(turn > whiteMoveLimit + blackMoveLimit && blackMoveLimit && whiteMoveLimit){
+    if (turn > whiteMoveLimit + blackMoveLimit && blackMoveLimit && whiteMoveLimit) {
       return whiteMoveLimit + blackMoveLimit
     } else {
       return turn;
@@ -114,7 +116,7 @@ export default class GameInfoBoard extends Component {
   getGameTurnSuffix = () => {
     const { whiteMoveLimit, blackMoveLimit } = this.props.gameInfo;
 
-    if(whiteMoveLimit && blackMoveLimit){
+    if (whiteMoveLimit && blackMoveLimit) {
       return ` / ${whiteMoveLimit + blackMoveLimit}`;
     } else {
       return null;
@@ -137,8 +139,8 @@ export default class GameInfoBoard extends Component {
 
         <Row gutter={16}>
           <Col span={12}>
-            <Card style={blackBkStyle} headStyle={blackHeadStyle} bordered={false} size="small" 
-                  extra={this.getPlayerTurnInfo(2)} title={this.getPlayerTitle(2)} >
+            <Card style={blackBkStyle} headStyle={blackHeadStyle} bordered={false} size="small"
+              extra={this.getPlayerTurnInfo(2)} title={this.getPlayerTitle(2)} >
               <Row>
                 <Col span={12}>
                   <Statistic
@@ -149,7 +151,7 @@ export default class GameInfoBoard extends Component {
                   />
                 </Col>
 
-                {whiteTimeLimit && blackTimeLimit? 
+                {whiteTimeLimit && blackTimeLimit ?
                   <Col span={12}>
                     <Statistic title="Time" value={this.getTimer(2)} suffix=" s" />
                   </Col> : null}
@@ -170,7 +172,7 @@ export default class GameInfoBoard extends Component {
 
           <Col span={12} >
             <Card style={whiteBkStyle} headStyle={whiteHeadStyle} bordered={false} size="small"
-                  title={this.getPlayerTitle(1)} extra={this.getPlayerTurnInfo(1)}>
+              title={this.getPlayerTitle(1)} extra={this.getPlayerTurnInfo(1)}>
               <Row>
                 <Col span={12}>
                   <Statistic
@@ -181,7 +183,7 @@ export default class GameInfoBoard extends Component {
                   />
                 </Col>
 
-                {whiteTimeLimit && blackTimeLimit? 
+                {whiteTimeLimit && blackTimeLimit ?
                   <Col span={12} >
                     <Statistic title="Time" value={this.getTimer(1)} suffix=" s" />
                   </Col> : null}

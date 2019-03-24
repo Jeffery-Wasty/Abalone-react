@@ -145,22 +145,22 @@ export const isLegalGroup = (selectedArray, newElement, curState) => {
         for (let i = 0; i < 6; i++) {
             if (destTable[selectedArray[0]][i] === parseInt(newElement)) {
                 valid = true;
-                validArray = parseInt(selectedArray[0]) > parseInt(newElement) ? 
-                            [newElement, selectedArray[0]] : 
-                            [selectedArray[0], newElement];
-            } else if (destTable[selectedArray[0]][i] !== -1 && 
-                       curState[destTable[selectedArray[0]][i]] === curState[newElement] && 
-                       destTable[destTable[selectedArray[0]][i]][i] === parseInt(newElement)) {
+                validArray = parseInt(selectedArray[0]) > parseInt(newElement) ?
+                    [newElement, selectedArray[0]] :
+                    [selectedArray[0], newElement];
+            } else if (destTable[selectedArray[0]][i] !== -1 &&
+                curState[destTable[selectedArray[0]][i]] === curState[newElement] &&
+                destTable[destTable[selectedArray[0]][i]][i] === parseInt(newElement)) {
                 valid = true;
-                validArray = parseInt(selectedArray[0]) > parseInt(newElement) ? 
-                            [newElement, destTable[selectedArray[0]][i].toString(), selectedArray[0]] : 
-                            [selectedArray[0], destTable[selectedArray[0]][i].toString(), newElement];
+                validArray = parseInt(selectedArray[0]) > parseInt(newElement) ?
+                    [newElement, destTable[selectedArray[0]][i].toString(), selectedArray[0]] :
+                    [selectedArray[0], destTable[selectedArray[0]][i].toString(), newElement];
             }
         }
     } else if (selectedArray.length === 2) {
         if (parseInt(selectedArray[0]) > parseInt(newElement)) {
             destTable[selectedArray[1]].forEach((location, index) => {
-                if (parseInt(location) === parseInt(selectedArray[0]) && 
+                if (parseInt(location) === parseInt(selectedArray[0]) &&
                     destTable[selectedArray[0]][index] === parseInt(newElement)) {
                     valid = true;
                     validArray = [newElement, ...selectedArray]
@@ -168,7 +168,7 @@ export const isLegalGroup = (selectedArray, newElement, curState) => {
             })
         } else {
             destTable[selectedArray[0]].forEach((location, index) => {
-                if (parseInt(location) === parseInt(selectedArray[1]) && 
+                if (parseInt(location) === parseInt(selectedArray[1]) &&
                     destTable[selectedArray[1]][index] === parseInt(newElement)) {
                     valid = true;
                     validArray = [...selectedArray, newElement]
@@ -236,29 +236,32 @@ export const moveMarbles = (changeInfoArray) => {
     })
 }
 
-export const convertAIResponse = (action) => {
-    if(!action.length){
-        console.error("empty action");
-    } 
-
-    let changeInfoArray = [];
-    let num0 = 0, num1 = 0, num2 = 0;
-
-    action.foreach( e => {
-        if(e[1] === 0){
-            num0++;
-        } else if (e[1] === 1) {
-            num1++;
-        } else if (e[1] === 2) {
-            num2++;
+export const getChangeInfoArrayFromAIMove = (move, prevState, boardArray) => {
+    const direction = destTable[move[0][0]].findIndex(n => n === move[1][0]);
+    const color = prevState[move[0][0]];
+    let selectedHex = [];
+    let marbleToPush = [];
+    
+    move.forEach(([index, marble], i) => {
+        if (marble) {
+            if(marble === color) {
+                selectedHex.push(move[i - 1][0].toString()); 
+            }else {
+                marbleToPush.push(move[i - 1][0].toString()); 
+            }         
         }
-    })
+    });
 
-    if(num1 > num2) {
+    const opponentNum = (player, state) => state.filter(c => c === (3 - player)).length;
 
-    } else if (num1 < num2) {
-        
+    if(move.length > 3 && destTable[move[move.length - 1][0]][direction] === -1){        
+        const nextState = getNextStateByAIAction(prevState, move);
+        if(opponentNum(color, prevState) !== opponentNum(color, nextState)){
+            marbleToPush.push(move[move.length - 1][0].toString());
+        }
     }
+
+    return getChangeInfoArray(selectedHex, direction, boardArray, marbleToPush);
 }
 
 
