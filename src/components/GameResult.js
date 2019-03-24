@@ -69,7 +69,7 @@ export default class GameResult extends Component {
             <div>
                 <Row >
                     <Col span={9} offset={2}>
-                        <Card title={this.getPlayerName(2)} headStyle={this.getPlayerTitleStyle(2)} >
+                        <Card bordered={false} title={this.getPlayerName(2)} headStyle={this.getPlayerTitleStyle(2)} >
                             <Card.Grid style={gridStyle} >
                                 <Statistic title="Score" value={resultBlack.score} />
                             </Card.Grid>
@@ -86,7 +86,7 @@ export default class GameResult extends Component {
                     </Col>
 
                     <Col span={9} offset={2}>
-                        <Card title={this.getPlayerName(1)} headStyle={this.getPlayerTitleStyle(1)} >
+                        <Card bordered={false} title={this.getPlayerName(1)} headStyle={this.getPlayerTitleStyle(1)} >
                             <Card.Grid style={gridStyle}>
                                 <Statistic title="Score" value={resultWhite.score} />
                             </Card.Grid>
