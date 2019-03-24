@@ -87,6 +87,19 @@ export default class Settings extends Component {
         this.props.startGame(gameSettings);
     }
 
+    getPlayerTitle = (player) => {
+        const {gameType, playerColor} = this.state;
+        if(gameType === "pvp"){
+            return player === 2? "White" : "Black";
+        } else if (gameType === "pve" && playerColor === 2) {
+            return player === 2? "White (AI)" : "Black (Player)";
+        } else if (gameType === "pve" && playerColor === 1) {
+            return player === 2? "White (Player)" : "Black (AI)";
+        } else {
+            return player === 2? "White (AI)" : "Black (AI)";
+        }
+    }
+
     render() {
         return (
             <div className="Custom-font Margin15">
@@ -129,7 +142,7 @@ export default class Settings extends Component {
                     {this.state.timeLimitChecked ?
                         <Col span={8} >
                             <div className="SettingDiv">
-                                <h3>White</h3>
+                                <h3>{this.getPlayerTitle(1)}</h3>
                                 <InputNumber min={1} max={1000} size="small" defaultValue={defaultTimeLimit} onChange={this.handleTimeLimitWhite}
                                     formatter={value => `${value}s`} parser={value => value.replace('s', '')} />
                             </div>
@@ -138,7 +151,7 @@ export default class Settings extends Component {
                     {this.state.timeLimitChecked ?
                         <Col span={8} >
                             <div className="SettingDiv">
-                                <h3>Black</h3>
+                                <h3>{this.getPlayerTitle(2)}</h3>
                                 <InputNumber min={1} max={1000} size="small" defaultValue={defaultTimeLimit} onChange={this.handleTimeLimitBlack}
                                     formatter={value => `${value}s`} parser={value => value.replace('s', '')} />
                             </div>
@@ -156,7 +169,7 @@ export default class Settings extends Component {
                     {this.state.moveLimitChecked? 
                         <Col span={8} >
                             <div className="SettingDiv">
-                                <h3>White</h3>
+                                <h3>{this.getPlayerTitle(1)}</h3>
                                 <InputNumber min={1} max={1000} size="small" defaultValue={defaultMoveLimit} onChange={this.handleMoveLimitWhite} />
                             </div>
                         </Col> : null}
@@ -164,7 +177,7 @@ export default class Settings extends Component {
                     {this.state.moveLimitChecked?
                         <Col span={8} >
                             <div className="SettingDiv">
-                                <h3>Black</h3>
+                                <h3>{this.getPlayerTitle(2)}</h3>
                                 <InputNumber min={1} max={1000} size="small" defaultValue={defaultMoveLimit} onChange={this.handleMoveLimitBlack} />
                             </div>
                         </Col> : null}

@@ -45,7 +45,7 @@ export default class GameBoard extends Component {
             AbaloneClient.connect();
         }
 
-        if (!whiteTimeLimit && !blackTimeLimit) {            
+        if (!whiteTimeLimit && !blackTimeLimit) {
             this.setState({ start: true });
             this.makeAIMove();
         }
@@ -192,13 +192,13 @@ export default class GameBoard extends Component {
 
         let that = this;
 
-        AbaloneClient.nextMove(packet).then( async ({ action }) => {
+        AbaloneClient.nextMove(packet).then(async ({ action }) => {
             const nextState = getNextStateByAIAction(curState, action);
             const changeInfoArray = getChangeInfoArrayFromAIMove(action, curState, boardArray);
 
             await moveMarbles(changeInfoArray);
 
-            that.updateMoveHistoryBoard(changeInfoArray);            
+            that.updateMoveHistoryBoard(changeInfoArray);
             that.updateBoardState(nextState);
         });
 
@@ -287,10 +287,10 @@ export default class GameBoard extends Component {
 
     pauseGame = () => {
         if (this.state.pause) {
-            this.setState({ pause: false })
-            this.startTimer()
+            this.setState({ pause: false });
+            this.startTimer();
         } else {
-            this.setState({ pause: true })
+            this.setState({ pause: true });
         }
     }
 
@@ -299,14 +299,16 @@ export default class GameBoard extends Component {
     }
 
     stopGame = () => {
-        if (this.state.clock) {
-            clearInterval(this.state.clock);
-        }
-
         this.setState({
-            start: false,
+            pause: true,
             gameResultVisible: true
-        })
+        });
+    }
+
+    closeResultWindow = () => {
+        this.setState({
+            gameResultVisible: false
+        });
     }
 
     resetGame = () => {
@@ -323,18 +325,14 @@ export default class GameBoard extends Component {
             timeLeft: 0,
             selectedHex: [],
             moveHistory: []
-        })
+        });
 
         const { whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
 
         if (!whiteTimeLimit && !blackTimeLimit) {
-            this.setState({
-                start: true
-            })
+            this.setState({ start: true });
         } else {
-            this.setState({
-                start: false
-            })
+            this.setState({ start: false });
         }
 
     }
@@ -386,7 +384,7 @@ export default class GameBoard extends Component {
 
         this.setState({
             clock
-        })
+        });
     }
 
     connectServer = async () => {
@@ -401,14 +399,14 @@ export default class GameBoard extends Component {
     }
 
     closeServerConfirmBox = () => {
-        this.setState({ serverConfirmVisible: false })
+        this.setState({ serverConfirmVisible: false });
     }
 
     render() {
 
         const startIcon = this.state.start ? (this.state.pause ? "step-forward" : "pause-circle") : "caret-right";
         const startClickFunction = this.state.start ? this.pauseGame : this.startGame;
-        const { whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
+        const { timeLimitChecked, moveLimitChecked, whiteMoveLimit, blackMoveLimit } = this.props.gameSettings;
 
         return (
             <div>
@@ -416,7 +414,7 @@ export default class GameBoard extends Component {
                     <Col span={11} offset={1}>
                         <div style={{ margin: 30 }}>
                             <Row gutter={4}>
-                                {whiteTimeLimit && blackTimeLimit ?
+                                { timeLimitChecked ?
                                     <Col span={5} offset={1}>
                                         <Button type="primary" size="large" icon={startIcon} onClick={startClickFunction} block>
                                             {this.state.start ? (this.state.pause ? "Resume" : "Pause") : "Start"}
@@ -446,7 +444,7 @@ export default class GameBoard extends Component {
                             />
                         </div>
 
-                        {whiteTimeLimit && blackTimeLimit ?
+                        { timeLimitChecked ?
                             <div style={{ margin: 20 }}>
                                 <Progress showInfo={false} strokeWidth={20} strokeColor="square" strokeLinecap="round" percent={this.state.progress} />
                             </div> : null}
@@ -477,10 +475,15 @@ export default class GameBoard extends Component {
                     centered
                     footer={[
                         <Row gutter={24} key="buttons">
-                            <Col span={6} offset={4}>
-                                <Button type="primary" onClick={this.resetGame} block>Play another game</Button>
+                            { !moveLimitChecked || (moveLimitChecked && this.state.turn <= whiteMoveLimit + blackMoveLimit) ?
+                                <Col span={6} offset={2}>
+                                    <Button type="primary" onClick={this.closeResultWindow} block>Continue</Button>
+                                </Col> :
+                                <Col span={10}></Col> }
+                            <Col span={6} offset={1}>
+                                <Button onClick={this.resetGame} block>Play another game</Button>
                             </Col>
-                            <Col span={6} offset={4}>
+                            <Col span={6} offset={1}>
                                 <Button type="danger" onClick={this.leaveGame} block>Leave game</Button>
                             </Col>
                         </Row>
