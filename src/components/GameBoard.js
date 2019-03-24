@@ -45,11 +45,9 @@ export default class GameBoard extends Component {
             AbaloneClient.connect();
         }
 
-        if (!whiteTimeLimit && !blackTimeLimit) {
-            this.setState(
-                { start: true },
-                () => this.makeAIMove()
-            );
+        if (!whiteTimeLimit && !blackTimeLimit) {            
+            this.setState({ start: true });
+            this.makeAIMove();
         }
     }
 
@@ -235,14 +233,14 @@ export default class GameBoard extends Component {
 
     makeAIMove = () => {
         const { gameType, whiteMoveLimit, blackMoveLimit, whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
-        const { turn, playerColor, curState, start } = this.state;
+        const { turn, playerColor, curState } = this.state;
 
-        if (!start || gameType === "pvp" || (turn % 2 !== (2 - playerColor))) {
+        if (gameType === "pvp" || (turn % 2 !== (2 - playerColor))) {
             return;
         }
 
-        const timeLimit = turn % 2 === 0 ? whiteTimeLimit : blackTimeLimit;
-        const turnLimit = playerColor === 2 ? whiteMoveLimit : blackMoveLimit;
+        const timeLimit = whiteTimeLimit && blackTimeLimit ? (turn % 2 === 0 ? whiteTimeLimit : blackTimeLimit) : 10;
+        const turnLimit = whiteMoveLimit && blackMoveLimit ? (playerColor === 2 ? whiteMoveLimit : blackMoveLimit) : 80;
         const packet = {
             turnLimit,
             timeLimit,
@@ -271,13 +269,13 @@ export default class GameBoard extends Component {
 
     startGame = () => {
         if (!AbaloneClient.connected && this.state.gameType === "pve") {
-            this.setState({ serverConfirmVisible: true })
+            this.setState({ serverConfirmVisible: true });
         } else {
             this.setState({
                 start: true,
                 timeLeft: this.props.gameSettings.blackTimeLimit
-            })
-
+            });
+            this.makeAIMove();
             this.startTimer();
         }
     }

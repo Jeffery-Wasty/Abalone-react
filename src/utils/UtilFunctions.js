@@ -336,7 +336,6 @@ export const isLegalMove = (selectedHex, moveDirection, boardArray, curState) =>
             }
         } else {
             //inline move
-
             const directionIndex = moveDirection < 3 ? 0 : 1;
             const nextMarblePosition = destTable[selectedHex[directionIndex]][moveDirection];
             if (nextMarblePosition !== -1) {
@@ -359,15 +358,14 @@ export const isLegalMove = (selectedHex, moveDirection, boardArray, curState) =>
         if (destTable[selectedHex[0]][5 - moveDirection] !== parseInt(selectedHex[1])
             && destTable[selectedHex[0]][moveDirection] !== parseInt(selectedHex[1])) {
             //side move
-            if (!curState[destTable[selectedHex[0]][moveDirection]] === 0
-                && !curState[destTable[selectedHex[1]][moveDirection]] === 0
+            if (curState[destTable[selectedHex[0]][moveDirection]] === 0
+                && curState[destTable[selectedHex[1]][moveDirection]] === 0
                 && curState[destTable[selectedHex[2]][moveDirection]] === 0) {
                 //both marble move direction is clean, okay to move
                 legalMove = true;
             }
         } else {
             //inline move
-
             const directionIndex = moveDirection < 3 ? 0 : 2;
             const nextMarblePosition = destTable[selectedHex[directionIndex]][moveDirection];
             if (nextMarblePosition !== -1) {
@@ -467,7 +465,7 @@ export const generateHistoryText = (history) => {
         text += `${boardNameArray[marble]} `;
     })
     text += `${getArrowSymbol(history.direction)} - `;
-    text += `Time taken: ${Math.round(history.time)}s`;
+    text += `(${Math.round(history.time)}s)`;
 
     return text;
 }
