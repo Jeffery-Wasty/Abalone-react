@@ -314,7 +314,7 @@ export default class GameBoard extends Component {
     isGameEnd = () => {
         const { moveLimitChecked, whiteMoveLimit, blackMoveLimit } = this.props.gameSettings;
         const { turn, curState } = this.state;
-        if (moveLimitChecked && turn > whiteMoveLimit + blackMoveLimit 
+        if ((moveLimitChecked && turn > whiteMoveLimit + blackMoveLimit) 
                 || curState.filter(c => c === 1).length <= 8
                 || curState.filter(c => c === 2).length <= 8) {
             this.stopGame();

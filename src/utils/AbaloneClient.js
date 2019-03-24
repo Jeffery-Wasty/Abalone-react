@@ -90,7 +90,7 @@ class AbaloneClient {
             // add handler that resolve the returned data
             const handlerId = this.addHandler(endpoint, (res) => {
                 // must use == here!!!
-                if (res.request_id == handlerId) {
+                if (parseInt(res.request_id) === parseInt(handlerId)) {
                     delete res['request_id'];
                     resolve(res);
                     this.removeHandler(endpoint, handlerId);
