@@ -15,7 +15,9 @@ export default class Settings extends Component {
         whiteMoveLimit: defaultMoveLimit,
         blackMoveLimit: defaultMoveLimit,
         whiteTimeLimit: defaultTimeLimit,
-        blackTimeLimit: defaultTimeLimit
+        blackTimeLimit: defaultTimeLimit,
+        timeLimitChecked: true,
+        moveLimitChecked: true
     }
 
     handleGameType = (e) => {
@@ -42,12 +44,14 @@ export default class Settings extends Component {
         if (!checked) {
             this.setState({
                 whiteMoveLimit: null,
-                blackMoveLimit: null
+                blackMoveLimit: null,
+                moveLimitChecked: false
             })
         } else {
             this.setState({
                 whiteMoveLimit: defaultMoveLimit,
-                blackMoveLimit: defaultMoveLimit
+                blackMoveLimit: defaultMoveLimit,
+                moveLimitChecked: true
             })
         }
     }
@@ -64,12 +68,14 @@ export default class Settings extends Component {
         if (!checked) {
             this.setState({
                 whiteTimeLimit: null,
-                blackTimeLimit: null
+                blackTimeLimit: null,
+                timeLimitChecked: false
             })
         } else {
             this.setState({
                 whiteTimeLimit: defaultTimeLimit,
-                blackTimeLimit: defaultTimeLimit
+                blackTimeLimit: defaultTimeLimit,
+                timeLimitChecked: true
             })
         }
     }
@@ -120,7 +126,7 @@ export default class Settings extends Component {
                         </div>
                     </Col>
 
-                    {this.state.whiteTimeLimit ?
+                    {this.state.timeLimitChecked ?
                         <Col span={8} >
                             <div className="SettingDiv">
                                 <h3>White</h3>
@@ -129,7 +135,7 @@ export default class Settings extends Component {
                             </div>
                         </Col> : null}
 
-                    {this.state.blackTimeLimit ?
+                    {this.state.timeLimitChecked ?
                         <Col span={8} >
                             <div className="SettingDiv">
                                 <h3>Black</h3>
@@ -147,7 +153,7 @@ export default class Settings extends Component {
                         </div>
                     </Col>
 
-                    {this.state.whiteMoveLimit? 
+                    {this.state.moveLimitChecked? 
                         <Col span={8} >
                             <div className="SettingDiv">
                                 <h3>White</h3>
@@ -155,7 +161,7 @@ export default class Settings extends Component {
                             </div>
                         </Col> : null}
                     
-                    {this.state.blackMoveLimit?
+                    {this.state.moveLimitChecked?
                         <Col span={8} >
                             <div className="SettingDiv">
                                 <h3>Black</h3>

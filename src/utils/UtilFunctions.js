@@ -236,6 +236,31 @@ export const moveMarbles = (changeInfoArray) => {
     })
 }
 
+export const convertAIResponse = (action) => {
+    if(!action.length){
+        console.error("empty action");
+    } 
+
+    let changeInfoArray = [];
+    let num0 = 0, num1 = 0, num2 = 0;
+
+    action.foreach( e => {
+        if(e[1] === 0){
+            num0++;
+        } else if (e[1] === 1) {
+            num1++;
+        } else if (e[1] === 2) {
+            num2++;
+        }
+    })
+
+    if(num1 > num2) {
+
+    } else if (num1 < num2) {
+        
+    }
+}
+
 
 export const getChangeInfoArray = (selectedHex, moveDirection, boardArray, marbleToPush) => {
     let changeInfoArray = [];
