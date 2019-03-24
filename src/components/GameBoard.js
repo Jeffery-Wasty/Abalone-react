@@ -6,6 +6,7 @@ import {
 import AbaloneClient from '../utils/AbaloneClient';
 import { Button, Col, Progress, Row, Modal, message } from 'antd';
 import GameInfoBoard from './GameInfoBoard';
+import GameResult from './GameResult';
 import DrawGameBoard, { boardArray } from './DrawGameBoard';
 
 export default class GameBoard extends Component {
@@ -23,7 +24,8 @@ export default class GameBoard extends Component {
             pause: false,
             start: false,
             moveHistory: [],
-            serverConfirmVisible: false
+            serverConfirmVisible: false,
+            gameResultVisible: false
         }
 
     }
@@ -39,6 +41,13 @@ export default class GameBoard extends Component {
     componentDidMount = () => {
         if (this.props.gameSettings.gameType === "pve") {
             AbaloneClient.connect();
+        }
+        
+        const { whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
+        if(!whiteTimeLimit && !blackTimeLimit) {
+            this.setState({
+                start: true
+            })
         }
     }
 
@@ -260,10 +269,20 @@ export default class GameBoard extends Component {
         } else {
             this.setState({ pause: true })
         }
+    }    
+
+    leaveGame = () => {
+        this.props.stopGame();
     }
 
     stopGame = () => {
-        this.props.stopGame();
+        if (this.state.clock) {
+            clearInterval(this.state.clock);
+        }
+
+        this.setState({
+            gameResultVisible: true
+        })
     }
 
     resetGame = () => {
@@ -272,15 +291,28 @@ export default class GameBoard extends Component {
         }
 
         this.setState({
-            curState: this.props.boardInitState,
+            curState: this.props.gameSettings.boardInitState,
+            gameResultVisible: false,
             turn: 1,
             progress: 100,
             pause: false,
-            start: false,
             timeLeft: 0,
             selectedHex: [],
             moveHistory: []
         })
+
+        const { whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
+
+        if(!whiteTimeLimit && !blackTimeLimit) {
+            this.setState({
+                start: true
+            })
+        } else {
+            this.setState({
+                start: false
+            })
+        }
+        
     }
 
     undoLastMove = () => {
@@ -360,11 +392,13 @@ export default class GameBoard extends Component {
                     <Col span={11} offset={1}>
                         <div style={{ margin: 30 }}>
                             <Row gutter={4}>
-                                <Col span={5} offset={1}>
-                                    <Button type="primary" size="large" icon={startIcon} onClick={startClickFunction} block>
-                                        {this.state.start ? (this.state.pause ? "Resume" : "Pause") : "Start"}
-                                    </Button>
-                                </Col>
+                                {whiteTimeLimit && blackTimeLimit? 
+                                    <Col span={5} offset={1}>
+                                        <Button type="primary" size="large" icon={startIcon} onClick={startClickFunction} block>
+                                            {this.state.start ? (this.state.pause ? "Resume" : "Pause") : "Start"}
+                                        </Button>
+                                    </Col>: <Col span={5} offset={1}></Col>}
+
                                 <Col span={5}>
                                     <Button type="danger" size="large" icon="stop" onClick={this.stopGame} block> Stop </Button>
                                 </Col>
@@ -408,6 +442,27 @@ export default class GameBoard extends Component {
                     cancelText="Cancel"
                 >
                     Server disconnected. Do you want to re-connect?
+                </Modal>
+
+                <Modal
+                    title="Game Result"
+                    visible={this.state.gameResultVisible}
+                    maskClosable={false}
+                    closable={false}
+                    width={1200}    
+                    centered
+                    footer={[
+                        <Row gutter={24} key="buttons">
+                            <Col span={6} offset={4}>
+                                <Button type="primary" onClick={this.resetGame} block>Play another game</Button>
+                            </Col>
+                            <Col span={6} offset={4}>
+                                <Button type="danger" onClick={this.leaveGame} block>Leave game</Button>
+                            </Col>
+                        </Row>
+                    ]}
+                >
+                    <GameResult gameInfo={this.state}/>
                 </Modal>
             </div>
         )

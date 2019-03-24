@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Row, Col, List, Button } from 'antd';
-import DrawGameBoard, { boardArray }  from './DrawGameBoard';
+import DrawGameBoard, { boardArray } from './DrawGameBoard';
 import { generateSupportlineTexts } from '../utils/UtilFunctions';
 
 export default class HistoryBoard extends Component {
@@ -21,14 +21,15 @@ export default class HistoryBoard extends Component {
 
     loadHistoryBoard = (e) => {
 
-        const history = this.props.moveHistory.find(history => history.turn === parseInt(e.target.getAttribute("turn")));
-        console.log(history);
+        const { moveHistory } = this.props;
+        const history = moveHistory.find(history => history.turn === parseInt(e.target.getAttribute("turn")));
+
         this.setState({
             selectedHistory: history
         })
     }
 
-    generateSupportLine = () => this.state.selectedHistory? 
+    generateSupportLine = () => this.state.selectedHistory ?
         generateSupportlineTexts(this.state.selectedHistory.marbles, boardArray, this.state.selectedHistory.direction) : null;
 
     render() {
@@ -52,7 +53,7 @@ export default class HistoryBoard extends Component {
                         />
                     </Col>
                     <Col span={16}>
-                        {this.state.selectedHistory ? 
+                        {this.state.selectedHistory ?
                             <DrawGameBoard
                                 curState={this.state.selectedHistory.state}
                                 locationSelected={this.locationSelected}
