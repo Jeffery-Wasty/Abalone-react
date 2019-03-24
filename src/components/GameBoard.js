@@ -17,17 +17,15 @@ export default class GameBoard extends Component {
             selectedHex: [],
             supportLine: [],
             curState: [],
-            lastState: [],
-            stateOption: 1,
+            lastState: [],            
+            moveHistory: [],
             progress: 100,
             timeLeft: 0,
             pause: false,
             start: false,
-            moveHistory: [],
             serverConfirmVisible: false,
             gameResultVisible: false
         }
-
     }
 
     componentWillMount() {
@@ -39,24 +37,26 @@ export default class GameBoard extends Component {
     }
 
     componentDidMount = () => {
-        const { whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
+        const { timeLimitChecked, gameType } = this.props.gameSettings;
 
-        if (this.props.gameSettings.gameType === "pve") {
+        if (gameType === "pve") {
             AbaloneClient.connect();
         }
 
-        if (!whiteTimeLimit && !blackTimeLimit) {
+        if (!timeLimitChecked) {
             this.setState({ start: true });
             this.shouldAIMove();
         }
     }
 
     componentWillUnmount = () => {
-        if (this.state.clock) {
-            clearInterval(this.state.clock);
+        const { clock } = this.state;
+        const { gameType } = this.props.gameSettings;
+        if (clock) {
+            clearInterval(clock);
         }
 
-        if (this.props.gameSettings.gameType === "pve") {
+        if (gameType === "pve") {
             AbaloneClient.close();
         }
     }
@@ -112,24 +112,26 @@ export default class GameBoard extends Component {
     }
 
     mouseOverHex = (e) => {
-        if (!this.state.selectedHex.length) {
+        const { selectedHex, curState } = this.state;
+        const hoverLocation = e.target.getAttribute('location');
+
+        if (!selectedHex.length) {
             return;
         }
 
-        const moveDirection = getMoveDirection(this.state.selectedHex, e.target.getAttribute('location'));
+        const moveDirection = getMoveDirection(selectedHex, hoverLocation);
 
         if (moveDirection !== -1) {
-            const changeInfoArray = isLegalMove(this.state.selectedHex, moveDirection, boardArray, this.state.curState);
+            const changeInfoArray = isLegalMove(selectedHex, moveDirection, boardArray, curState);
 
             if (changeInfoArray) {
-                const points = generateSupportlineTexts(this.state.selectedHex, boardArray, moveDirection);
+                const points = generateSupportlineTexts(selectedHex, boardArray, moveDirection);
                 this.showSupportLine(points, changeInfoArray);
             }
-
         }
     }
 
-    mouseOutHex = (e) => {
+    mouseOutHex = () => {
         this.hideSupportLine();
     }
 
@@ -174,7 +176,7 @@ export default class GameBoard extends Component {
     }
 
     shouldAIMove = () => {
-        const { gameType, whiteMoveLimit, blackMoveLimit, whiteTimeLimit, blackTimeLimit, 
+        const { gameType, whiteMoveLimit, blackMoveLimit, whiteTimeLimit, blackTimeLimit,
             autoSwitchTurn, moveLimitChecked, timeLimitChecked } = this.props.gameSettings;
         const { turn, playerColor, curState } = this.state;
 
@@ -191,11 +193,11 @@ export default class GameBoard extends Component {
             state: curState,
         };
 
-        const dialog = autoSwitchTurn? 
+        const dialog = autoSwitchTurn ?
             Modal.info({
                 content: <div><Spin />  Waiting AI Move...</div>,
                 centered: true
-            }) : 
+            }) :
             Modal.confirm({
                 title: 'AI Next Move',
                 content: <div><Spin />  Waiting AI Move...</div>,
@@ -218,11 +220,11 @@ export default class GameBoard extends Component {
                 that.pauseGame();
                 const history = this.generateMoveAction(changeInfoArray);
                 const { text, marbles, direction } = history;
-                   
+
                 dialog.update({
                     content: (
                         <div>
-                            {text}
+                            <div style={{textAlign: "center"}}>{text}</div>
                             <DrawGameBoard
                                 selectedHex={history.marbles}
                                 boardState={history.boardState}
@@ -250,12 +252,17 @@ export default class GameBoard extends Component {
     doAIMove = async (action, changeInfoArray) => {
         const { curState } = this.state;
         const nextState = getNextStateByAIAction(curState, action);
+
         await moveMarbles(changeInfoArray);
         this.updateMoveHistoryBoard(changeInfoArray);
         this.updateBoardState(nextState);
+        this.isGameEnd();
     }
 
-    generateMoveAction = (changeInfoArray) => {
+    generateMoveAction = (changeInfoArray) => {        
+        const { whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
+        const { turn, timeLeft, curState } = this.state;
+
         //update move history
         let marbles = [];
 
@@ -263,15 +270,14 @@ export default class GameBoard extends Component {
             marbles.push([element.originLocation]);
         })
 
-        const { whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
-        const timeLimit = this.state.turn % 2 === 0 ? whiteTimeLimit : blackTimeLimit
+        const timeLimit = turn % 2 === 0 ? whiteTimeLimit : blackTimeLimit
 
         let action = {
-            turn: this.state.turn,
+            turn,
             marbles,
             direction: changeInfoArray[0].direction,
-            time: timeLimit - this.state.timeLeft,
-            boardState: this.state.curState
+            time: timeLimit - timeLeft,
+            boardState: curState
         }
 
         action.text = generateHistoryText(action);
@@ -305,12 +311,14 @@ export default class GameBoard extends Component {
     }
 
     isGameEnd = () => {
-        const { whiteMoveLimit, blackMoveLimit } = this.props.gameSettings;
-        const { turn } = this.state;
-        if (turn > whiteMoveLimit + blackMoveLimit && whiteMoveLimit && whiteMoveLimit) {
+        const { moveLimitChecked, whiteMoveLimit, blackMoveLimit } = this.props.gameSettings;
+        const { turn, curState } = this.state;
+        if (moveLimitChecked && turn > whiteMoveLimit + blackMoveLimit 
+                || curState.filter(c => c === 1).length <= 8
+                || curState.filter(c => c === 2).length <= 8) {
             this.stopGame();
             return true;
-        } else {
+        } else { 
             return false;
         }
     }
@@ -414,16 +422,18 @@ export default class GameBoard extends Component {
         const period = 10;
 
         let clock = setInterval(() => {
-            if (this.state.pause) {
+            const { pause, timeLeft, turn } = this.state;
+
+            if (pause) {
                 clearInterval(clock);
             } else {
-                if (this.state.timeLeft > 0) {
-                    let timeLeft = this.state.timeLeft - 1 / period;
-                    let timeLimit = this.state.turn % 2 === 0 ? whiteTimeLimit : blackTimeLimit;
-                    let progress = (timeLeft / timeLimit) * 100;
+                if (timeLeft > 0) {
+                    let tempTime = timeLeft - 1 / period;
+                    let timeLimit = turn % 2 === 0 ? whiteTimeLimit : blackTimeLimit;
 
                     this.setState({
-                        timeLeft, progress
+                        timeLeft: tempTime, 
+                        progress: (tempTime / timeLimit) * 100
                     })
                 } else {
                     clearInterval(clock);
@@ -481,8 +491,8 @@ export default class GameBoard extends Component {
                         </div>
                         <div>
                             <DrawGameBoard
-                                boardState = {this.state.curState}
-                                selectedHex = {this.state.selectedHex}
+                                boardState={this.state.curState}
+                                selectedHex={this.state.selectedHex}
                                 supportLine={this.state.supportLine}
                                 mouseOverHex={this.mouseOverHex}
                                 mouseOutHex={this.mouseOutHex}
