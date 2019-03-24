@@ -5,6 +5,7 @@ import { getInitialState } from '../utils/InitState';
 const defaultTimeLimit = 20;
 const defaultMoveLimit = 40;
 const radioBtnWidth = 140;
+const switchStyle = {marginLeft: '5%', width: 60};
 
 export default class Settings extends Component {
 
@@ -17,7 +18,8 @@ export default class Settings extends Component {
         whiteTimeLimit: defaultTimeLimit,
         blackTimeLimit: defaultTimeLimit,
         timeLimitChecked: true,
-        moveLimitChecked: true
+        moveLimitChecked: true,
+        autoSwitchTurn: true
     }
 
     handleGameType = (e) => {
@@ -80,6 +82,18 @@ export default class Settings extends Component {
         }
     }
 
+    handleAutoSwitchTurn = (checked) => {
+        if (!checked) {
+            this.setState({
+                autoSwitchTurn: false
+            })
+        } else {
+            this.setState({
+                autoSwitchTurn: true
+            })
+        }
+    }
+
     startGame = () => {
         let gameSettings = { ...this.state };
         gameSettings.boardInitState = getInitialState(this.state.boardInitState);
@@ -90,13 +104,13 @@ export default class Settings extends Component {
     getPlayerTitle = (player) => {
         const {gameType, playerColor} = this.state;
         if(gameType === "pvp"){
-            return player === 2? "White" : "Black";
+            return player === 1? "White" : "Black";
         } else if (gameType === "pve" && playerColor === 2) {
-            return player === 2? "White (AI)" : "Black (Player)";
+            return player === 1? "White (AI)" : "Black (Player)";
         } else if (gameType === "pve" && playerColor === 1) {
-            return player === 2? "White (Player)" : "Black (AI)";
+            return player === 1? "White (Player)" : "Black (AI)";
         } else {
-            return player === 2? "White (AI)" : "Black (AI)";
+            return player === 1? "White (AI)" : "Black (AI)";
         }
     }
 
@@ -124,20 +138,37 @@ export default class Settings extends Component {
 
                 {this.state.gameType === "pve" ?
                     <div className="SettingDiv">
-                        <h3>Player Color Selection</h3>
-                        <Radio.Group value={this.state.playerColor} onChange={this.handleColorSelection}>
-                            <Radio.Button style={{ width: radioBtnWidth }} value={1}>White</Radio.Button>
-                            <Radio.Button style={{ width: radioBtnWidth }} value={2}>Black</Radio.Button>
-                        </Radio.Group>
+                        <Row>
+                            <Col span={8}>
+                                <h3>Auto Switch turn</h3>
+                                <Switch style={switchStyle} defaultChecked onChange={this.handleAutoSwitchTurn} />
+                            </Col>
+                            <Col span={16}>
+                                <h3 style={{marginLeft: '5%'}}>Player Color Selection</h3>
+                                <Radio.Group value={this.state.playerColor} onChange={this.handleColorSelection}>                                
+                                    <Radio.Button style={{ width: radioBtnWidth }} value={2}>Black</Radio.Button>
+                                    <Radio.Button style={{ width: radioBtnWidth }} value={1}>White</Radio.Button>
+                                </Radio.Group>
+                            </Col>  
+                        </Row>                                              
                     </div> : null}
 
                 <Row>
                     <Col span={8}>
                         <div className="SettingDiv">
                             <h3>Time limit </h3>
-                            <Switch style={{marginLeft: '5%', width: 50}} defaultChecked onChange={this.handleTimeLimitSwitch} />
+                            <Switch style={switchStyle} defaultChecked onChange={this.handleTimeLimitSwitch} />
                         </div>
                     </Col>
+
+                    {this.state.timeLimitChecked ?
+                        <Col span={8} >
+                            <div className="SettingDiv">
+                                <h3>{this.getPlayerTitle(2)}</h3>
+                                <InputNumber min={1} max={1000} size="small" defaultValue={defaultTimeLimit} onChange={this.handleTimeLimitBlack}
+                                    formatter={value => `${value}s`} parser={value => value.replace('s', '')} />
+                            </div>
+                        </Col> : null}                        
 
                     {this.state.timeLimitChecked ?
                         <Col span={8} >
@@ -147,38 +178,29 @@ export default class Settings extends Component {
                                     formatter={value => `${value}s`} parser={value => value.replace('s', '')} />
                             </div>
                         </Col> : null}
-
-                    {this.state.timeLimitChecked ?
-                        <Col span={8} >
-                            <div className="SettingDiv">
-                                <h3>{this.getPlayerTitle(2)}</h3>
-                                <InputNumber min={1} max={1000} size="small" defaultValue={defaultTimeLimit} onChange={this.handleTimeLimitBlack}
-                                    formatter={value => `${value}s`} parser={value => value.replace('s', '')} />
-                            </div>
-                        </Col> : null}
                 </Row>
 
                 <Row>
                     <Col span={8}>
                         <div className="SettingDiv">
                             <h3>Move limit</h3>
-                            <Switch style={{marginLeft: '5%', width: 50}} defaultChecked onChange={this.handleMoveLimitSwitch} />
+                            <Switch style={switchStyle} defaultChecked onChange={this.handleMoveLimitSwitch} />
                         </div>
                     </Col>
-
-                    {this.state.moveLimitChecked? 
-                        <Col span={8} >
-                            <div className="SettingDiv">
-                                <h3>{this.getPlayerTitle(1)}</h3>
-                                <InputNumber min={1} max={1000} size="small" defaultValue={defaultMoveLimit} onChange={this.handleMoveLimitWhite} />
-                            </div>
-                        </Col> : null}
                     
                     {this.state.moveLimitChecked?
                         <Col span={8} >
                             <div className="SettingDiv">
                                 <h3>{this.getPlayerTitle(2)}</h3>
                                 <InputNumber min={1} max={1000} size="small" defaultValue={defaultMoveLimit} onChange={this.handleMoveLimitBlack} />
+                            </div>
+                        </Col> : null}
+
+                    {this.state.moveLimitChecked? 
+                        <Col span={8} >
+                            <div className="SettingDiv">
+                                <h3>{this.getPlayerTitle(1)}</h3>
+                                <InputNumber min={1} max={1000} size="small" defaultValue={defaultMoveLimit} onChange={this.handleMoveLimitWhite} />
                             </div>
                         </Col> : null}
                 </Row>

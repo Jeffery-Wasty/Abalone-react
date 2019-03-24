@@ -47,7 +47,7 @@ export default class GameBoard extends Component {
 
         if (!whiteTimeLimit && !blackTimeLimit) {
             this.setState({ start: true });
-            this.makeAIMove();
+            this.shouldAIMove();
         }
     }
 
@@ -169,12 +169,12 @@ export default class GameBoard extends Component {
 
         //end game if exceeds turn limit
         if (!this.isGameEnd()) {
-            this.makeAIMove();
+            this.shouldAIMove();
         }
     }
 
-    makeAIMove = () => {
-        const { gameType, whiteMoveLimit, blackMoveLimit, whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
+    shouldAIMove = () => {
+        const { gameType, whiteMoveLimit, blackMoveLimit, whiteTimeLimit, blackTimeLimit, autoSwitchTurn } = this.props.gameSettings;
         const { turn, playerColor, curState } = this.state;
 
         if (gameType === "pvp" || (turn % 2 !== (2 - playerColor))) {
@@ -192,20 +192,42 @@ export default class GameBoard extends Component {
 
         let that = this;
 
-        AbaloneClient.nextMove(packet).then(async ({ action }) => {
-            const nextState = getNextStateByAIAction(curState, action);
+        AbaloneClient.nextMove(packet).then(({ action }) => { 
             const changeInfoArray = getChangeInfoArrayFromAIMove(action, curState, boardArray);
-
-            await moveMarbles(changeInfoArray);
-
-            that.updateMoveHistoryBoard(changeInfoArray);
-            that.updateBoardState(nextState);
+            if(autoSwitchTurn){
+                that.doAIMove(action, changeInfoArray);
+            } else {
+                that.pauseGame();
+                const { text } = this.generateMoveAction(changeInfoArray);
+                const dialog = Modal.confirm({
+                    title: 'AI Next Move',
+                    content: text,
+                    onOk () {
+                        that.doAIMove(action, changeInfoArray); 
+                        that.pauseGame();
+                        dialog.destroy();},
+                    onCancel () {
+                        that.undoLastMove(); 
+                        dialog.destroy();
+                    },
+                    cancelType: "danger",
+                    okText: "Move",
+                    cancelText: "Undo"
+                });                
+            }
         });
 
     }
 
-    updateMoveHistoryBoard = (changeInfoArray) => {
+    doAIMove = async (action, changeInfoArray) => {
+        const { curState } = this.state;
+        const nextState = getNextStateByAIAction(curState, action);
+        await moveMarbles(changeInfoArray);
+        this.updateMoveHistoryBoard(changeInfoArray);
+        this.updateBoardState(nextState);
+    }
 
+    generateMoveAction = (changeInfoArray) => {
         //update move history
         let marbles = [];
 
@@ -225,9 +247,12 @@ export default class GameBoard extends Component {
         }
 
         action.text = generateHistoryText(action);
+        return action;
+    }
 
+    updateMoveHistoryBoard = (changeInfoArray) => {     
         this.setState(prevState => ({
-            moveHistory: [...prevState.moveHistory, action]
+            moveHistory: [...prevState.moveHistory, this.generateMoveAction(changeInfoArray)]
         }));
     }
 
@@ -280,7 +305,7 @@ export default class GameBoard extends Component {
                 start: true,
                 timeLeft: this.props.gameSettings.blackTimeLimit
             });
-            this.makeAIMove();
+            this.shouldAIMove();
             this.startTimer();
         }
     }
@@ -343,15 +368,20 @@ export default class GameBoard extends Component {
         }
 
         const { whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
+        let copyMoveHistory = [...this.state.moveHistory];
+        copyMoveHistory.pop();
 
         this.setState(prevState => ({
             lastState: [],
             curState: prevState.lastState,
             timeLeft: prevState.turn % 2 === 0 ? whiteTimeLimit : blackTimeLimit,
             progress: 100,
-            pause: false,
-            turn: prevState.turn - 1
+            pause: true,
+            turn: prevState.turn - 1,
+            moveHistory: copyMoveHistory
         }));
+
+        
     }
 
     startTimer = () => {
