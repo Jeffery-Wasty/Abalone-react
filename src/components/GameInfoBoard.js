@@ -161,7 +161,7 @@ export default class GameInfoBoard extends Component {
 
             <Card style={blackTimelineStyle}>
               <Timeline>
-                {this.getPlayerMoveHistory(2).slice(0, 9).map((history, key) => {
+                {this.getPlayerMoveHistory(2).slice(0, 8).map((history, key) => {
                   return key === 0 ? <Timeline.Item key={key} color="green">{history.text}</Timeline.Item> :
                     <Timeline.Item key={key} color="blue">{history.text}</Timeline.Item>
                 })}
@@ -192,7 +192,7 @@ export default class GameInfoBoard extends Component {
 
             <Card style={whiteTimelineStyle}>
               <Timeline>
-                {this.getPlayerMoveHistory(1).map((history, key) => {
+                {this.getPlayerMoveHistory(1).slice(0, 8).map((history, key) => {
                   return key === 0 ? <Timeline.Item key={key} color="green">{history.text}</Timeline.Item> :
                     <Timeline.Item key={key} color="blue">{history.text}</Timeline.Item>
                 })}
