@@ -21,6 +21,7 @@ export default class HistoryBoard extends Component {
     timeTravel = () => {
         const { selectedHistory } = this.state;
         let moveHistoryCopy = [...this.props.moveHistory];
+        this.setState({selectedHistory: null})
         this.props.timeTravel(moveHistoryCopy.filter(e => e.turn < selectedHistory.turn), selectedHistory)
     }
 
