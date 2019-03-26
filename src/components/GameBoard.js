@@ -18,14 +18,15 @@ export default class GameBoard extends Component {
             selectedHex: [],
             supportLine: [],
             curState: [],
-            lastState: [],            
+            lastState: [],
             moveHistory: [],
             progress: 100,
             timeLeft: 0,
             pause: false,
             start: false,
             serverConfirmVisible: false,
-            gameResultVisible: false
+            gameResultVisible: false,
+            historyVisible: false
         }
     }
 
@@ -170,7 +171,7 @@ export default class GameBoard extends Component {
         const nextState = getNextState(changeInfoArray, this.state.curState);
         this.updateBoardState(nextState);
 
-        //end game if exceeds turn limit
+        //end game if exceeds turn limit or score equals 6
         if (!this.isGameEnd()) {
             this.shouldAIMove();
         }
@@ -225,7 +226,7 @@ export default class GameBoard extends Component {
                 dialog.update({
                     content: (
                         <div>
-                            <div style={{textAlign: "center"}}>{text}</div>
+                            <div style={{ textAlign: "center" }}>{text}</div>
                             <DrawGameBoard
                                 selectedHex={history.marbles}
                                 boardState={history.boardState}
@@ -260,7 +261,7 @@ export default class GameBoard extends Component {
         this.isGameEnd();
     }
 
-    generateMoveAction = (changeInfoArray) => {        
+    generateMoveAction = (changeInfoArray) => {
         const { whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
         const { turn, timeLeft, curState } = this.state;
 
@@ -314,12 +315,12 @@ export default class GameBoard extends Component {
     isGameEnd = () => {
         const { moveLimitChecked, whiteMoveLimit, blackMoveLimit } = this.props.gameSettings;
         const { turn, curState } = this.state;
-        if ((moveLimitChecked && turn > whiteMoveLimit + blackMoveLimit) 
-                || curState.filter(c => c === 1).length <= 8
-                || curState.filter(c => c === 2).length <= 8) {
+        if ((moveLimitChecked && turn > whiteMoveLimit + blackMoveLimit)
+            || curState.filter(c => c === 1).length <= 8
+            || curState.filter(c => c === 2).length <= 8) {
             this.stopGame();
             return true;
-        } else { 
+        } else {
             return false;
         }
     }
@@ -354,12 +355,6 @@ export default class GameBoard extends Component {
         this.setState({
             pause: true,
             gameResultVisible: true
-        });
-    }
-
-    closeResultWindow = () => {
-        this.setState({
-            gameResultVisible: false
         });
     }
 
@@ -404,9 +399,12 @@ export default class GameBoard extends Component {
             timeLeft: prevState.turn % 2 === 1 ? whiteTimeLimit : blackTimeLimit,
             progress: 100,
             pause: true,
+            selectedHex: [],
             turn: prevState.turn - 1,
             moveHistory: copyMoveHistory
-        }));
+            }),
+            () => this.shouldAIMove()
+        );
     }
 
     startTimer = () => {
@@ -433,7 +431,7 @@ export default class GameBoard extends Component {
                     let timeLimit = turn % 2 === 0 ? whiteTimeLimit : blackTimeLimit;
 
                     this.setState({
-                        timeLeft: tempTime, 
+                        timeLeft: tempTime,
                         progress: (tempTime / timeLimit) * 100
                     })
                 } else {
@@ -460,11 +458,52 @@ export default class GameBoard extends Component {
         this.setState({ serverConfirmVisible: false });
     }
 
-    render() {
+    closeResultWindow = () => {
+        this.setState({
+            gameResultVisible: false
+        });
+    }
 
-        const startIcon = this.state.start ? (this.state.pause ? "step-forward" : "pause-circle") : "caret-right";
-        const startClickFunction = this.state.start ? this.pauseGame : this.startGame;
+    viewHistory = () => {
+        if (!this.state.moveHistory.length) {
+            message.warning('No history!');
+        } else {
+            this.setState({
+                historyVisible: true,
+                pause: true
+            });
+        }        
+    }
+
+    closeHistory = () => {
+        this.setState({
+            historyVisible: false,
+        });
+    };
+
+    timeTravel = (moveHistory, selectedHistory) => {
+        const { whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
+        this.setState({
+            moveHistory,
+            curState: selectedHistory.boardState,
+            turn: selectedHistory.turn, progress: 100,
+            timeLeft: selectedHistory.turn % 2 === 1 ? blackTimeLimit : whiteTimeLimit,
+            selectedHex: [],
+            start: true,
+            pause: true
+        },
+        () => this.shouldAIMove())
+        
+        this.closeHistory();
+    }
+
+    render() {
+        const { turn, start, pause, curState, selectedHex, supportLine, progress, serverConfirmVisible, gameResultVisible } = this.state;
         const { timeLimitChecked, moveLimitChecked, whiteMoveLimit, blackMoveLimit } = this.props.gameSettings;
+
+        const startIcon = start ? (pause ? "step-forward" : "pause-circle") : "caret-right";
+        const startText = start ? (pause ? "Resume" : "Pause") : "Start";
+        const startClickFunction = start ? this.pauseGame : this.startGame;
         const resultTitleStyle = { fontSize: 20, color: "#f57c00", fontWeight: "bold", fontFamily: `"Comic Sans MS", cursive, sans-serif` };
 
         return (
@@ -476,7 +515,7 @@ export default class GameBoard extends Component {
                                 {timeLimitChecked ?
                                     <Col span={5} offset={1}>
                                         <Button type="primary" size="large" icon={startIcon} onClick={startClickFunction} block>
-                                            {this.state.start ? (this.state.pause ? "Resume" : "Pause") : "Start"}
+                                            {startText}
                                         </Button>
                                     </Col> : <Col span={5} offset={1}></Col>}
 
@@ -493,9 +532,9 @@ export default class GameBoard extends Component {
                         </div>
                         <div>
                             <DrawGameBoard
-                                boardState={this.state.curState}
-                                selectedHex={this.state.selectedHex}
-                                supportLine={this.state.supportLine}
+                                boardState={curState}
+                                selectedHex={selectedHex}
+                                supportLine={supportLine}
                                 mouseOverHex={this.mouseOverHex}
                                 mouseOutHex={this.mouseOutHex}
                                 clickHex={this.clickHex}
@@ -505,38 +544,41 @@ export default class GameBoard extends Component {
 
                         {timeLimitChecked ?
                             <div style={{ margin: 20 }}>
-                                <Progress showInfo={false} strokeWidth={20} strokeColor="square" strokeLinecap="round" percent={this.state.progress} />
+                                <Progress showInfo={false} strokeWidth={20} strokeColor="square" strokeLinecap="round" percent={progress} />
                             </div> : null}
 
                     </Col>
                     <Col span={10} offset={1}>
-                        <GameInfoBoard gameInfo={this.state} />
+                        <GameInfoBoard gameInfo={this.state} closeHistory={this.closeHistory} timeTravel={this.timeTravel} />
+                        <Button style={{ float: "right", marginTop: 50 }} type="dashed" onClick={this.viewHistory} ghost>
+                            View Entire History
+                        </Button>
                     </Col>
                 </Row>
 
                 <Modal
                     title="Server Disconnected"
-                    visible={this.state.serverConfirmVisible}
+                    visible={serverConfirmVisible}
                     onOk={this.connectServer}
                     onCancel={this.closeServerConfirmBox}
                     okText="Reconnect"
                     cancelText="Cancel"
                 >
                     Server disconnected. Do you want to re-connect?
-                </Modal>               
+                </Modal>
 
                 <Modal
                     title={<div style={resultTitleStyle}>Game Result </div>}
-                    visible={this.state.gameResultVisible}
+                    visible={gameResultVisible}
                     maskClosable={false}
                     closable={false}
                     width={1200}
-                    bodyStyle={{backgroundImage: `url(${resultBk})`}}
+                    bodyStyle={{ backgroundImage: `url(${resultBk})` }}
                     centered
                     footer={[
                         <div key="buttons" >
                             <Row gutter={24} >
-                                {!moveLimitChecked || (moveLimitChecked && this.state.turn <= whiteMoveLimit + blackMoveLimit) ?
+                                {!moveLimitChecked || (moveLimitChecked && turn <= whiteMoveLimit + blackMoveLimit) ?
                                     <Col span={6} offset={2}>
                                         <Button type="primary" onClick={this.closeResultWindow} block>Continue</Button>
                                     </Col> :
@@ -548,12 +590,12 @@ export default class GameBoard extends Component {
                                     <Button type="danger" onClick={this.leaveGame} block>Leave game</Button>
                                 </Col>
                             </Row>
-                        </div>                        
+                        </div>
                     ]}
                 >
-                    <GameResult gameInfo={this.state} />                  
+                    <GameResult gameInfo={this.state} />
                 </Modal>
-                
+
             </div>
         )
     }

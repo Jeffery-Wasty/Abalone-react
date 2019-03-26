@@ -10,7 +10,6 @@ export default class HistoryBoard extends Component {
     }
 
     loadHistoryBoard = (e) => {
-
         const { moveHistory } = this.props;
         const history = moveHistory.find(history => history.turn === parseInt(e.target.getAttribute("turn")));
 
@@ -19,23 +18,33 @@ export default class HistoryBoard extends Component {
         })
     }
 
+    timeTravel = () => {
+        const { selectedHistory } = this.state;
+        let moveHistoryCopy = [...this.props.moveHistory];
+        this.props.timeTravel(moveHistoryCopy.filter(e => e.turn < selectedHistory.turn), selectedHistory)
+    }
+
     generateSupportLine = () => this.state.selectedHistory ?
         generateSupportlineTexts(this.state.selectedHistory.marbles, boardArray, this.state.selectedHistory.direction) : null;
 
     render() {
         const { selectedHistory } = this.state;
-
+        const textStyle = { fontSize: 20, textStyle: "bold", fontFamily: `"Comic Sans MS", cursive, sans-serif` }
         return (
             <div>
                 <Row gutter={16}>
                     <Col span={8}>
                         <List
                             size="small"
-                            header={<div>Move History</div>}
+                            header={
+                                <div>
+                                    <span style={textStyle}>Move History</span>
+                                    {this.state.selectedHistory ? <Button style={{ float: "right" }} type="danger" onClick={this.timeTravel}>Time Travel</Button> : null}
+                                </div>
+                            }
                             pagination={{
                                 pageSize: 12,
                             }}
-                            bordered
                             dataSource={this.props.moveHistory}
                             renderItem={item => (
                                 <List.Item>

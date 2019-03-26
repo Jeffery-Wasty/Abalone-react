@@ -89,7 +89,6 @@ class AbaloneClient {
         return new Promise((resolve, reject) => {
             // add handler that resolve the returned data
             const handlerId = this.addHandler(endpoint, (res) => {
-                // must use == here!!!
                 if (parseInt(res.request_id) === parseInt(handlerId)) {
                     delete res['request_id'];
                     resolve(res);

@@ -1,3 +1,10 @@
+# Abalone Project
+The user interface is written in react and running in electron. The backend UI is written in a seperate Java project.
+
+## Install Project
+```sh
+$ npm install
+```
 ## Start the application in electron
 ### `Development Mode`
 ```sh

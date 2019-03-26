@@ -1,23 +1,9 @@
 import React, { Component } from 'react';
-import { Timeline, Statistic, Card, Row, Col, Icon, Button, Drawer } from 'antd';
+import { Timeline, Statistic, Card, Row, Col, Icon, Drawer } from 'antd';
 import HistoryBoard from './HistoryBoard';
+import historyBk from '../image/history.jpg';
 
 export default class GameInfoBoard extends Component {
-  state = {
-    historyVisible: false
-  }
-
-  viewHistory = () => {
-    this.setState({
-      historyVisible: true,
-    });
-  }
-
-  closeHistory = () => {
-    this.setState({
-      historyVisible: false,
-    });
-  };
 
   getTimer = (player) => {
     let timer = 0;
@@ -124,7 +110,7 @@ export default class GameInfoBoard extends Component {
   }
 
   render() {
-    const { moveHistory, whiteTimeLimit, blackTimeLimit } = this.props.gameInfo;
+    const { moveHistory, whiteTimeLimit, blackTimeLimit, historyVisible } = this.props.gameInfo;
     const { whiteBkStyle, blackBkStyle, whiteTimelineStyle, blackTimelineStyle, blackHeadStyle, whiteHeadStyle } = this.getGameInfoBoardStyle();
 
     return (
@@ -202,22 +188,15 @@ export default class GameInfoBoard extends Component {
           </Col>
         </Row>
 
-        <Row>
-          <Button style={{ float: "right", marginTop: 50 }}
-            onClick={this.viewHistory} type="dashed" ghost>
-            View Entire History
-          </Button>
-        </Row>
-
-
         <Drawer
-          title="History"
+          title={<div style={{color: "#f57c00", fontFamily:`"Comic Sans MS", cursive, sans-serif`, fontSize: 30}}>History</div>}
           placement="right"
           width={1200}
-          onClose={this.closeHistory}
-          visible={this.state.historyVisible}
+          onClose={this.props.closeHistory}
+          visible={historyVisible}
+          bodyStyle={{backgroundImage: `url(${historyBk})`, backgroundRepeat: 'no-repeat', backgroundSize: 'cover', minHeight: "90%"}}
         >
-          <HistoryBoard moveHistory={moveHistory} />
+          <HistoryBoard moveHistory={moveHistory} timeTravel={this.props.timeTravel} />
         </Drawer>
 
       </div>
