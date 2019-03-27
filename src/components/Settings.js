@@ -132,7 +132,7 @@ export default class Settings extends Component {
                     <Radio.Group value={this.state.gameType} onChange={this.handleGameType}>
                         <Radio.Button style={{ width: radioBtnWidth }} value="pvp">Player vs Player</Radio.Button>
                         <Radio.Button style={{ width: radioBtnWidth }} value="pve">Player vs AI</Radio.Button>
-                        <Radio.Button style={{ width: radioBtnWidth }} value="eve" disabled>AI vs AI</Radio.Button>
+                        <Radio.Button style={{ width: radioBtnWidth }} value="eve">AI vs AI</Radio.Button>
                     </Radio.Group>
                 </div>
 

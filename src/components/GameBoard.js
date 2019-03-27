@@ -41,7 +41,7 @@ export default class GameBoard extends Component {
     componentDidMount = () => {
         const { timeLimitChecked, gameType } = this.props.gameSettings;
 
-        if (gameType === "pve") {
+        if (gameType === "pve" || gameType === "eve") {
             AbaloneClient.connect();
         }
 
@@ -58,7 +58,7 @@ export default class GameBoard extends Component {
             clearInterval(clock);
         }
 
-        if (gameType === "pve") {
+        if (gameType === "pve" || gameType === "eve") {
             AbaloneClient.close();
         }
     }
@@ -69,7 +69,7 @@ export default class GameBoard extends Component {
         const color = parseInt(e.target.getAttribute('color'));
         const position = e.target.getAttribute('location');
 
-        if (!start) {
+        if (!start || gameType === "eve") {
             return;
         }
 
@@ -134,11 +134,12 @@ export default class GameBoard extends Component {
     }
 
     mouseOutHex = () => {
-        this.hideSupportLine();
+        if (this.state.selectedHex.length) {
+            this.hideSupportLine();
+        }        
     }
 
     showSupportLine = (points, changeInfoArray) => {
-
         if (!points.length) {
             return;
         }
@@ -172,81 +173,91 @@ export default class GameBoard extends Component {
         this.updateBoardState(nextState);
 
         //end game if exceeds turn limit or score equals 6
-        if (!this.isGameEnd()) {
-            this.shouldAIMove();
-        }
+        this.isGameEnd();
     }
 
     shouldAIMove = () => {
         const { gameType, whiteMoveLimit, blackMoveLimit, whiteTimeLimit, blackTimeLimit,
             autoSwitchTurn, moveLimitChecked, timeLimitChecked } = this.props.gameSettings;
-        const { turn, playerColor, curState } = this.state;
+        const { start, pause, turn, playerColor, curState } = this.state;
 
-        if (gameType === "pvp" || (turn % 2 !== (2 - playerColor))) {
+        if (!start && pause && gameType === "pvp" || ((turn % 2 !== (2 - playerColor)) && gameType === "pve")) {
             return;
         }
 
         const timeLimit = timeLimitChecked ? (turn % 2 === 0 ? whiteTimeLimit : blackTimeLimit) : 5;
-        const turnLimit = moveLimitChecked ? (playerColor === 2 ? whiteMoveLimit : blackMoveLimit) : 500;
+        const turnLimit = moveLimitChecked ? (playerColor === 2 ? whiteMoveLimit : blackMoveLimit) : 0;
         const packet = {
             turnLimit,
             timeLimit,
             turn,
             state: curState,
+            gameType
         };
 
-        const dialog = autoSwitchTurn ?
-            Modal.info({
-                content: <div><Spin />  Waiting AI Move...</div>,
-                centered: true
-            }) :
-            Modal.confirm({
-                title: 'AI Next Move',
-                content: <div><Spin />  Waiting AI Move...</div>,
-                cancelType: "danger",
-                okText: "Move",
-                cancelText: "Undo",
-                okButtonProps: { disabled: true },
-                cancelButtonProps: { disabled: true },
-                centered: true
-            });
+        const dialog = gameType !== "eve" ?         
+            (autoSwitchTurn ?
+                Modal.info({
+                    content: <div><Spin />  Waiting AI Move...</div>,
+                    centered: true
+                }) :
+                Modal.confirm({
+                    title: 'AI Next Move',
+                    content: <div><Spin />  Waiting AI Move...</div>,
+                    cancelType: "danger",
+                    okText: "Move",
+                    cancelText: "Undo",
+                    okButtonProps: { disabled: true },
+                    cancelButtonProps: { disabled: true },
+                    centered: true
+                })) 
+            : null;
 
         let that = this;
 
         AbaloneClient.nextMove(packet).then(({ action }) => {
+             if(this.state.pause){
+                 return;
+             }
+
             const changeInfoArray = getChangeInfoArrayFromAIMove(action, curState, boardArray);
-            if (autoSwitchTurn) {
-                dialog.destroy();
+
+            if (!dialog) {
                 that.doAIMove(action, changeInfoArray);
             } else {
-                that.pauseGame();
-                const history = this.generateMoveAction(changeInfoArray);
-                const { text, marbles, direction } = history;
-
-                dialog.update({
-                    content: (
-                        <div>
-                            <div style={{ textAlign: "center" }}>{text}</div>
-                            <DrawGameBoard
-                                selectedHex={history.marbles}
-                                boardState={history.boardState}
-                                supportLine={generateSupportlineTexts(marbles, boardArray, direction)}
-                            />
-                        </div>
-                    ),
-                    onOk() {
-                        that.doAIMove(action, changeInfoArray);
-                        that.pauseGame();
-                        dialog.destroy();
-                    },
-                    onCancel() {
-                        that.undoLastMove();
-                        dialog.destroy();
-                    },
-                    okButtonProps: { disabled: false },
-                    cancelButtonProps: { disabled: false }
-                });
-            }
+                if (autoSwitchTurn) {
+                    dialog.destroy();
+                    that.doAIMove(action, changeInfoArray);
+                } else {
+                    that.pauseGame();
+                    const history = this.generateMoveAction(changeInfoArray);
+                    const { text, marbles, direction } = history;
+    
+                    dialog.update({
+                        content: (
+                            <div>
+                                <div style={{ textAlign: "center" }}>{text}</div>
+                                <DrawGameBoard
+                                    selectedHex={history.marbles}
+                                    boardState={history.boardState}
+                                    supportLine={generateSupportlineTexts(marbles, boardArray, direction)}
+                                />
+                            </div>
+                        ),
+                        onOk() {
+                            that.doAIMove(action, changeInfoArray);
+                            that.pauseGame();
+                            dialog.destroy();
+                        },
+                        onCancel() {
+                            that.undoLastMove();
+                            dialog.destroy();
+                        },
+                        okButtonProps: { disabled: false },
+                        cancelButtonProps: { disabled: false }
+                    });
+                }
+            }            
         });
 
     }
@@ -305,7 +316,8 @@ export default class GameBoard extends Component {
             timeLeft: prevState.turn % 2 === 1 ? whiteTimeLimit : blackTimeLimit,
             progress: 100,
             pause: false,
-            turn: prevState.turn + 1
+            turn: prevState.turn + 1,
+            changeInfoArray: null
         }));
 
         this.startTimer();
@@ -319,9 +331,8 @@ export default class GameBoard extends Component {
             || curState.filter(c => c === 1).length <= 8
             || curState.filter(c => c === 2).length <= 8) {
             this.stopGame();
-            return true;
         } else {
-            return false;
+            this.shouldAIMove();
         }
     }
 
@@ -339,11 +350,25 @@ export default class GameBoard extends Component {
     }
 
     pauseGame = () => {
-        if (this.state.pause) {
+        const {turn, pause, gameType} = this.state;
+        const { whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
+
+        if (pause) {
             this.setState({ pause: false });
             this.startTimer();
-        } else {
-            this.setState({ pause: true });
+
+            if(gameType === "eve"){
+                this.shouldAIMove();
+            }            
+        } else {           
+            if(gameType === "eve"){
+                this.setState({ 
+                    pause: true,
+                    timeLeft: turn % 2 === 1 ? whiteTimeLimit : blackTimeLimit
+                });
+            } else {
+                this.setState({ pause: true });
+            }
         }
     }
 
