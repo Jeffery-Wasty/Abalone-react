@@ -179,9 +179,9 @@ export default class GameBoard extends Component {
     shouldAIMove = () => {
         const { gameType, whiteMoveLimit, blackMoveLimit, whiteTimeLimit, blackTimeLimit,
             autoSwitchTurn, moveLimitChecked, timeLimitChecked } = this.props.gameSettings;
-        const { pause, turn, playerColor, curState } = this.state;
+        const { start, pause, turn, playerColor, curState } = this.state;
 
-        if ( pause || gameType === "pvp" || ((turn % 2 !== (2 - playerColor)) && gameType === "pve")) {
+        if (!start || pause || gameType === "pvp" || ((turn % 2 !== (2 - playerColor)) && gameType === "pve")) {
             return;
         }
 
@@ -343,9 +343,11 @@ export default class GameBoard extends Component {
             this.setState({
                 start: true,
                 timeLeft: this.props.gameSettings.blackTimeLimit
-            });
-            this.shouldAIMove();
-            this.startTimer();
+            },
+            () => {
+                this.shouldAIMove();
+                this.startTimer();
+            });            
         }
     }
 
