@@ -8,6 +8,7 @@ import { Button, Col, Progress, Row, Modal, message, Spin } from 'antd';
 import GameInfoBoard from './GameInfoBoard';
 import GameResult from './GameResult';
 import DrawGameBoard, { boardArray } from './DrawGameBoard';
+import AbaloneAI from '../utils/AbaloneAI';
 import resultBk from '../image/result.jpg';
 
 export default class GameBoard extends Component {
@@ -136,7 +137,7 @@ export default class GameBoard extends Component {
     mouseOutHex = () => {
         if (this.state.selectedHex.length) {
             this.hideSupportLine();
-        }        
+        }
     }
 
     showSupportLine = (points, changeInfoArray) => {
@@ -195,7 +196,7 @@ export default class GameBoard extends Component {
             gameType
         };
 
-        const dialog = gameType !== "eve" ?         
+        const dialog = gameType !== "eve" ?
             (autoSwitchTurn ?
                 Modal.info({
                     content: <div><Spin />  Waiting AI Move...</div>,
@@ -210,15 +211,15 @@ export default class GameBoard extends Component {
                     okButtonProps: { disabled: true },
                     cancelButtonProps: { disabled: true },
                     centered: true
-                })) 
+                }))
             : null;
 
         let that = this;
 
         AbaloneClient.nextMove(packet).then(({ action }) => {
-             if(this.state.pause){
-                 return;
-             }
+            if (this.state.pause) {
+                return;
+            }
 
             const changeInfoArray = getChangeInfoArrayFromAIMove(action, curState, boardArray);
 
@@ -232,7 +233,7 @@ export default class GameBoard extends Component {
                     that.pauseGame();
                     const history = this.generateMoveAction(changeInfoArray);
                     const { text, marbles, direction } = history;
-    
+
                     dialog.update({
                         content: (
                             <div>
@@ -257,7 +258,7 @@ export default class GameBoard extends Component {
                         cancelButtonProps: { disabled: false }
                     });
                 }
-            }            
+            }
         });
 
     }
@@ -344,27 +345,27 @@ export default class GameBoard extends Component {
                 start: true,
                 timeLeft: this.props.gameSettings.blackTimeLimit
             },
-            () => {
-                this.shouldAIMove();
-                this.startTimer();
-            });            
+                () => {
+                    this.shouldAIMove();
+                    this.startTimer();
+                });
         }
     }
 
     pauseGame = () => {
-        const {turn, pause, gameType} = this.state;
+        const { turn, pause, gameType } = this.state;
         const { whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
 
         if (pause) {
             this.setState({ pause: false });
             this.startTimer();
 
-            if(gameType === "eve"){
+            if (gameType === "eve") {
                 this.shouldAIMove();
-            }            
-        } else {           
-            if(gameType === "eve"){
-                this.setState({ 
+            }
+        } else {
+            if (gameType === "eve") {
+                this.setState({
                     pause: true,
                     timeLeft: turn % 2 === 1 ? whiteTimeLimit : blackTimeLimit
                 });
@@ -429,7 +430,7 @@ export default class GameBoard extends Component {
             selectedHex: [],
             turn: prevState.turn - 1,
             moveHistory: copyMoveHistory
-            }),
+        }),
             () => this.shouldAIMove()
         );
     }
@@ -499,7 +500,7 @@ export default class GameBoard extends Component {
                 historyVisible: true,
                 pause: true
             });
-        }        
+        }
     }
 
     closeHistory = () => {
@@ -519,9 +520,20 @@ export default class GameBoard extends Component {
             start: true,
             pause: true
         },
-        () => this.shouldAIMove())
-        
+            () => this.shouldAIMove())
+
         this.closeHistory();
+    }
+
+    testMove = async () => {
+        const { curState, turn } = this.state;
+        console.log(curState.toString());
+        let action = await AbaloneAI.MinMaxDecision(curState, turn, 4);
+        let selected = [];
+        action.selectedMarbles.forEach(e=> {selected.push(e.toString())});
+        let changeInfoArray = isLegalMove(selected, action.direction, boardArray, curState);
+        this.makeMove(changeInfoArray);
+        
     }
 
     render() {
@@ -580,6 +592,9 @@ export default class GameBoard extends Component {
                         <Button style={{ float: "right", marginTop: 50 }} type="dashed" onClick={this.viewHistory} ghost>
                             View Entire History
                         </Button>
+                        {/* <Button style={{ float: "right", marginTop: 50 }} type="dashed" onClick={this.testMove}>
+                            Test Move
+                        </Button> */}
                     </Col>
                 </Row>
 
