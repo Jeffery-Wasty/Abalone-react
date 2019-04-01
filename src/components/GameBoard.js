@@ -8,8 +8,10 @@ import { Button, Col, Progress, Row, Modal, message, Spin } from 'antd';
 import GameInfoBoard from './GameInfoBoard';
 import GameResult from './GameResult';
 import DrawGameBoard, { boardArray } from './DrawGameBoard';
+import GodMode from './GodMode';
 import AbaloneAI from '../utils/AbaloneAI';
 import resultBk from '../image/result.jpg';
+import historyBk from '../image/history.jpg';
 
 export default class GameBoard extends Component {
 
@@ -27,7 +29,8 @@ export default class GameBoard extends Component {
             start: false,
             serverConfirmVisible: false,
             gameResultVisible: false,
-            historyVisible: false
+            historyVisible: false,
+            godModeVisible: false
         }
     }
 
@@ -492,7 +495,8 @@ export default class GameBoard extends Component {
         });
     }
 
-    viewHistory = () => {
+    viewHistory = (e) => {
+
         if (!this.state.moveHistory.length) {
             message.warning('No history!');
         } else {
@@ -514,15 +518,15 @@ export default class GameBoard extends Component {
         this.setState({
             moveHistory,
             curState: selectedHistory.boardState,
-            turn: selectedHistory.turn, progress: 100,
+            turn: selectedHistory.turn, 
+            progress: 100,
             timeLeft: selectedHistory.turn % 2 === 1 ? blackTimeLimit : whiteTimeLimit,
+            historyVisible: false,
             selectedHex: [],
             start: true,
             pause: true
         },
-            () => this.shouldAIMove())
-
-        this.closeHistory();
+        () => this.shouldAIMove())
     }
 
     testMove = async () => {
@@ -536,8 +540,38 @@ export default class GameBoard extends Component {
         
     }
 
+    GodMode = () => {
+        this.setState({
+            godModeVisible:true,
+            pause: true
+        })
+    }
+
+    closeGodMode = () => {
+        this.setState({
+            godModeVisible:false
+        })
+    }
+
+    cheatGame = (gameInfo) => {
+        const { whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
+
+        this.setState({
+            curState: gameInfo.boardState,
+            turn: gameInfo.turn,
+            godModeVisible: false,
+            progress: 100,
+            timeLeft: gameInfo.turn % 2 === 1 ? blackTimeLimit : whiteTimeLimit,
+            selectedHex: [],
+            start: true,
+            pause: true
+        },
+        () => this.shouldAIMove())
+
+    }
+
     render() {
-        const { turn, start, pause, curState, selectedHex, supportLine, progress, serverConfirmVisible, gameResultVisible } = this.state;
+        const { turn, start, pause, curState, selectedHex, supportLine, progress, serverConfirmVisible, gameResultVisible, godModeVisible } = this.state;
         const { timeLimitChecked, moveLimitChecked, whiteMoveLimit, blackMoveLimit } = this.props.gameSettings;
 
         const startIcon = start ? (pause ? "step-forward" : "pause-circle") : "caret-right";
@@ -546,7 +580,7 @@ export default class GameBoard extends Component {
         const resultTitleStyle = { fontSize: 20, color: "#f57c00", fontWeight: "bold", fontFamily: `"Comic Sans MS", cursive, sans-serif` };
 
         return (
-            <div>
+            <div>        
                 <Row>
                     <Col span={11} offset={1}>
                         <div style={{ margin: 30 }}>
@@ -589,12 +623,17 @@ export default class GameBoard extends Component {
                     </Col>
                     <Col span={10} offset={1}>
                         <GameInfoBoard gameInfo={this.state} closeHistory={this.closeHistory} timeTravel={this.timeTravel} />
-                        <Button style={{ float: "right", marginTop: 50 }} type="dashed" onClick={this.viewHistory} ghost>
+                        <Button 
+                            style={{ float: "right", marginTop: 50 }} 
+                            type="dashed" 
+                            onClick={this.viewHistory} 
+                            onContextMenu={this.GodMode} 
+                            ghost>
                             View Entire History
-                        </Button>
+                        </Button>                        
                         {/* <Button style={{ float: "right", marginTop: 50 }} type="dashed" onClick={this.testMove}>
                             Test Move
-                        </Button> */}
+                        </Button> */}                         
                     </Col>
                 </Row>
 
@@ -636,6 +675,19 @@ export default class GameBoard extends Component {
                     ]}
                 >
                     <GameResult gameInfo={this.state} />
+                </Modal>
+
+                <Modal
+                    title="God Mode"
+                    visible={godModeVisible}
+                    width={1200}
+                    bodyStyle={{backgroundImage: `url(${historyBk})`, backgroundRepeat: 'no-repeat', backgroundSize: 'cover', minHeight: "90%"}}
+                    onCancel={this.closeGodMode}
+                    footer={null}
+                    destroyOnClose={true}
+                    centered                    
+                >
+                    <GodMode gameInfo={this.state} updateGame={this.cheatGame} />
                 </Modal>
 
             </div>
