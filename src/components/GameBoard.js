@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import {
-    isLegalGroup, moveMarbles, getMoveDirection, isLegalMove, generateHistoryText, locationSelected,
-    getNextStateByAIAction, getNextState, generateSupportlineTexts, getChangeInfoArrayFromAIMove
+    isLegalGroup, moveMarbles, getMoveDirection, isLegalMove, generateHistoryText, 
+    locationSelected, getNextStateByAIAction, getNextState, generateSupportlineTexts, 
+    getChangeInfoArrayFromAIMove, isPlayerMove
 } from '../utils/UtilFunctions';
 import AbaloneClient from '../utils/AbaloneClient';
 import { Button, Col, Progress, Row, Modal, message, Spin } from 'antd';
@@ -184,8 +185,8 @@ export default class GameBoard extends Component {
         const { gameType, whiteMoveLimit, blackMoveLimit, whiteTimeLimit, blackTimeLimit,
             autoSwitchTurn, moveLimitChecked, timeLimitChecked } = this.props.gameSettings;
         const { start, pause, turn, playerColor, curState } = this.state;
-
-        if (!start || pause || gameType === "pvp" || ((turn % 2 !== (2 - playerColor)) && gameType === "pve")) {
+        
+        if (!start || pause || isPlayerMove(gameType, turn, playerColor)) {
             return;
         }
 
@@ -515,6 +516,8 @@ export default class GameBoard extends Component {
 
     timeTravel = (moveHistory, selectedHistory) => {
         const { whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
+        const { gameType, playerColor } = this.state;
+        let pause = isPlayerMove(gameType, selectedHistory.turn, playerColor)? true: false;
         this.setState({
             moveHistory,
             curState: selectedHistory.boardState,
@@ -524,9 +527,14 @@ export default class GameBoard extends Component {
             historyVisible: false,
             selectedHex: [],
             start: true,
-            pause: true
+            pause
         },
-        () => this.shouldAIMove())
+        () =>  {
+            if(!pause){
+                this.startTimer();
+                this.shouldAIMove();
+            }
+        })
     }
 
     testMove = async () => {
@@ -555,7 +563,9 @@ export default class GameBoard extends Component {
 
     cheatGame = (gameInfo) => {
         const { whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
+        const { gameType, playerColor } = this.state;
 
+        let pause = isPlayerMove(gameType, gameInfo.turn, playerColor)? true: false;
         this.setState({
             curState: gameInfo.boardState,
             turn: gameInfo.turn,
@@ -564,9 +574,14 @@ export default class GameBoard extends Component {
             timeLeft: gameInfo.turn % 2 === 1 ? blackTimeLimit : whiteTimeLimit,
             selectedHex: [],
             start: true,
-            pause: true
+            pause
         },
-        () => this.shouldAIMove())
+        () => {
+            if(!pause){
+                this.startTimer();
+                this.shouldAIMove();
+            }
+        })
 
     }
 

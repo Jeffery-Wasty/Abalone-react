@@ -500,3 +500,5 @@ export const generateHistoryText = (history) => {
     return text;
 }
 
+
+export const isPlayerMove = (gameType, turn, playerColor)  => gameType === "pvp" || ((turn % 2 !== (2 - playerColor)) && gameType === "pve");
