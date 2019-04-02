@@ -15,7 +15,7 @@ export const getInitialState = (option) => {
                 2, 2, 2, 2, 2
             ];
             break;
-        case 2:
+        case 3:
             initialState = [
                 1,1,0,2,2,
                 1,1,1,2,2,2,
@@ -28,7 +28,7 @@ export const getInitialState = (option) => {
                 2,2,0,1,1
             ];
             break;
-        case 3:
+        case 2:
             initialState = [
                 0,0,0,0,0,
                 1,1,0,0,2,2,
