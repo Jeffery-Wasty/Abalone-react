@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import { Button, InputNumber, Radio, Col, Row, Switch } from 'antd';
 import { getInitialState } from '../utils/InitState';
 
-const defaultTimeLimit = 5;
-const defaultMoveLimit = 30;
+const defaultTimeLimit = 10;
+const defaultMoveLimit = 40;
 const radioBtnWidth = 140;
 const switchStyle = {marginLeft: '5%', width: 60};
 
