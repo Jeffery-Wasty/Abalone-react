@@ -183,7 +183,7 @@ export default class GameBoard extends Component {
 
     shouldAIMove = () => {
         const { gameType, whiteMoveLimit, blackMoveLimit, whiteTimeLimit, blackTimeLimit,
-            autoSwitchTurn, moveLimitChecked, timeLimitChecked } = this.props.gameSettings;
+            autoSwitchTurn, moveLimitChecked, timeLimitChecked, boardInitStateNo } = this.props.gameSettings;
         const { start, pause, turn, playerColor, curState } = this.state;
         
         if (!start || pause || isPlayerMove(gameType, turn, playerColor)) {
@@ -197,9 +197,10 @@ export default class GameBoard extends Component {
             timeLimit,
             turn,
             state: curState,
-            gameType
+            gameType,
+            layout: boardInitStateNo
         };
-
+        console.log(packet);
         const dialog = gameType !== "eve" ?
             (autoSwitchTurn ?
                 Modal.info({
@@ -673,12 +674,10 @@ export default class GameBoard extends Component {
                     centered
                     footer={[
                         <div key="buttons" >
-                            <Row gutter={24} >
-                                {!moveLimitChecked || (moveLimitChecked && turn <= whiteMoveLimit + blackMoveLimit) ?
-                                    <Col span={6} offset={2}>
-                                        <Button type="primary" onClick={this.closeResultWindow} block>Continue</Button>
-                                    </Col> :
-                                    <Col span={10}></Col>}
+                            <Row gutter={24} >                                
+                                <Col span={6} offset={2}>
+                                    <Button type="primary" onClick={this.closeResultWindow} block>Continue</Button>
+                                </Col> 
                                 <Col span={6} offset={1}>
                                     <Button onClick={this.resetGame} block>Play another game</Button>
                                 </Col>

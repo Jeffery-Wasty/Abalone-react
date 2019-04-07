@@ -11,7 +11,7 @@ export default class Settings extends Component {
 
     state = {
         gameType: "pvp",
-        boardInitState: 1,
+        boardInitStateNo: 1,
         playerColor: 2,
         whiteMoveLimit: defaultMoveLimit,
         blackMoveLimit: defaultMoveLimit,
@@ -27,7 +27,7 @@ export default class Settings extends Component {
     }
 
     handleInitState = (e) => {
-        this.setState({ boardInitState: e.target.value });
+        this.setState({ boardInitStateNo: e.target.value });
     }
 
     handleColorSelection = (e) => {
@@ -96,7 +96,7 @@ export default class Settings extends Component {
 
     startGame = () => {
         let gameSettings = { ...this.state };
-        gameSettings.boardInitState = getInitialState(this.state.boardInitState);
+        gameSettings.boardInitState = getInitialState(this.state.boardInitStateNo);
 
         this.props.startGame(gameSettings);
     }
@@ -120,7 +120,7 @@ export default class Settings extends Component {
 
                 <div className="SettingDiv" >
                     <h3>Board Layout</h3>
-                    <Radio.Group value={this.state.boardInitState} onChange={this.handleInitState}>
+                    <Radio.Group value={this.state.boardInitStateNo} onChange={this.handleInitState}>
                         <Radio.Button style={{ width: radioBtnWidth }} value={1}>Standard</Radio.Button>
                         <Radio.Button style={{ width: radioBtnWidth }} value={2}>German Daisy</Radio.Button>
                         <Radio.Button style={{ width: radioBtnWidth }} value={3}>Belgian Daisy</Radio.Button>
