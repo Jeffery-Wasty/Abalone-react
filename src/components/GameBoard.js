@@ -587,8 +587,8 @@ export default class GameBoard extends Component {
     }
 
     render() {
-        const { turn, start, pause, curState, selectedHex, supportLine, progress, serverConfirmVisible, gameResultVisible, godModeVisible } = this.state;
-        const { timeLimitChecked, moveLimitChecked, whiteMoveLimit, blackMoveLimit } = this.props.gameSettings;
+        const { start, pause, curState, selectedHex, supportLine, progress, serverConfirmVisible, gameResultVisible, godModeVisible } = this.state;
+        const { timeLimitChecked } = this.props.gameSettings;
 
         const startIcon = start ? (pause ? "step-forward" : "pause-circle") : "caret-right";
         const startText = start ? (pause ? "Resume" : "Pause") : "Start";

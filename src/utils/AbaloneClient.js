@@ -12,14 +12,16 @@ class AbaloneClient {
         state,
         timeLimit,
         turnLimit,
-        turn
+        turn,
+        layout
     }) => {
         state = state.join(',');
         let response = await this.callServer('next-move', {
             state,
             timeLimit,
             turnLimit,
-            turn
+            turn,
+            layout
         });
         response.action = JSON.parse(response.action);
         return response;
