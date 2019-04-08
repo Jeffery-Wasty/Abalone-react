@@ -60,7 +60,8 @@
     "build": "node scripts/build.js",
     "test": "node scripts/test.js",
     "electron": "electron ./public/electron-main",
-    "electron-dev": "set NODE_ENV=development&& electron ./public/electron-main"
+    "electron-dev": "set NODE_ENV=development&& electron ./public/electron-main",
+    "app-build": "electron-packager build"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -132,6 +133,7 @@
     ]
   },
   "devDependencies": {
-    "electron": "^4.1.0"
+    "electron": "^4.1.0",
+    "electron-packager": "^13.1.1"
   }
 }
