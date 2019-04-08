@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import {
-    isLegalGroup, moveMarbles, getMoveDirection, isLegalMove, generateHistoryText, 
-    locationSelected, getNextStateByAIAction, getNextState, generateSupportlineTexts, 
+    isLegalGroup, moveMarbles, getMoveDirection, isLegalMove, generateHistoryText,
+    locationSelected, getNextStateByAIAction, getNextState, generateSupportlineTexts,
     getChangeInfoArrayFromAIMove, isPlayerMove
 } from '../utils/UtilFunctions';
 import AbaloneClient from '../utils/AbaloneClient';
@@ -13,6 +13,7 @@ import GodMode from './GodMode';
 import AbaloneAI from '../utils/AbaloneAI';
 import resultBk from '../image/result.jpg';
 import historyBk from '../image/history.jpg';
+import SoundUtil from '../utils/SoundUtil';
 
 export default class GameBoard extends Component {
 
@@ -185,7 +186,7 @@ export default class GameBoard extends Component {
         const { gameType, whiteMoveLimit, blackMoveLimit, whiteTimeLimit, blackTimeLimit,
             autoSwitchTurn, moveLimitChecked, timeLimitChecked, boardInitStateNo } = this.props.gameSettings;
         const { start, pause, turn, playerColor, curState } = this.state;
-        
+
         if (!start || pause || isPlayerMove(gameType, turn, playerColor)) {
             return;
         }
@@ -337,6 +338,7 @@ export default class GameBoard extends Component {
             || curState.filter(c => c === 1).length <= 8
             || curState.filter(c => c === 2).length <= 8) {
             this.stopGame();
+            SoundUtil.play('victory_screen_start');
         } else {
             this.shouldAIMove();
         }
@@ -463,10 +465,15 @@ export default class GameBoard extends Component {
                     let tempTime = timeLeft - 1 / period;
                     let timeLimit = turn % 2 === 0 ? whiteTimeLimit : blackTimeLimit;
 
+                    const progress = (tempTime / timeLimit) * 100
+                    if (progress < 50) {
+                        SoundUtil.playThinking();
+                    }
                     this.setState({
                         timeLeft: tempTime,
-                        progress: (tempTime / timeLimit) * 100
-                    })
+                        progress
+                    });
+
                 } else {
                     clearInterval(clock);
                 }
@@ -518,11 +525,11 @@ export default class GameBoard extends Component {
     timeTravel = (moveHistory, selectedHistory) => {
         const { whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
         const { gameType, playerColor } = this.state;
-        let pause = isPlayerMove(gameType, selectedHistory.turn, playerColor)? true: false;
+        let pause = isPlayerMove(gameType, selectedHistory.turn, playerColor) ? true : false;
         this.setState({
             moveHistory,
             curState: selectedHistory.boardState,
-            turn: selectedHistory.turn, 
+            turn: selectedHistory.turn,
             progress: 100,
             timeLeft: selectedHistory.turn % 2 === 1 ? blackTimeLimit : whiteTimeLimit,
             historyVisible: false,
@@ -530,12 +537,12 @@ export default class GameBoard extends Component {
             start: true,
             pause
         },
-        () =>  {
-            if(!pause){
-                this.startTimer();
-                this.shouldAIMove();
-            }
-        })
+            () => {
+                if (!pause) {
+                    this.startTimer();
+                    this.shouldAIMove();
+                }
+            })
     }
 
     testMove = async () => {
@@ -543,22 +550,22 @@ export default class GameBoard extends Component {
         console.log(curState.toString());
         let action = await AbaloneAI.MinMaxDecision(curState, turn, 4);
         let selected = [];
-        action.selectedMarbles.forEach(e=> {selected.push(e.toString())});
+        action.selectedMarbles.forEach(e => { selected.push(e.toString()) });
         let changeInfoArray = isLegalMove(selected, action.direction, boardArray, curState);
         this.makeMove(changeInfoArray);
-        
+
     }
 
     GodMode = () => {
         this.setState({
-            godModeVisible:true,
+            godModeVisible: true,
             pause: true
         })
     }
 
     closeGodMode = () => {
         this.setState({
-            godModeVisible:false
+            godModeVisible: false
         })
     }
 
@@ -566,7 +573,7 @@ export default class GameBoard extends Component {
         const { whiteTimeLimit, blackTimeLimit } = this.props.gameSettings;
         const { gameType, playerColor } = this.state;
 
-        let pause = isPlayerMove(gameType, gameInfo.turn, playerColor)? true: false;
+        let pause = isPlayerMove(gameType, gameInfo.turn, playerColor) ? true : false;
         this.setState({
             curState: gameInfo.boardState,
             turn: gameInfo.turn,
@@ -577,12 +584,12 @@ export default class GameBoard extends Component {
             start: true,
             pause
         },
-        () => {
-            if(!pause){
-                this.startTimer();
-                this.shouldAIMove();
-            }
-        })
+            () => {
+                if (!pause) {
+                    this.startTimer();
+                    this.shouldAIMove();
+                }
+            })
 
     }
 
@@ -596,7 +603,7 @@ export default class GameBoard extends Component {
         const resultTitleStyle = { fontSize: 20, color: "#f57c00", fontWeight: "bold", fontFamily: `"Comic Sans MS", cursive, sans-serif` };
 
         return (
-            <div>        
+            <div>
                 <Row>
                     <Col span={11} offset={1}>
                         <div style={{ margin: 30 }}>
@@ -639,17 +646,17 @@ export default class GameBoard extends Component {
                     </Col>
                     <Col span={10} offset={1}>
                         <GameInfoBoard gameInfo={this.state} closeHistory={this.closeHistory} timeTravel={this.timeTravel} />
-                        <Button 
-                            style={{ float: "right", marginTop: 50 }} 
-                            type="dashed" 
-                            onClick={this.viewHistory} 
-                            onContextMenu={this.GodMode} 
+                        <Button
+                            style={{ float: "right", marginTop: 50 }}
+                            type="dashed"
+                            onClick={this.viewHistory}
+                            onContextMenu={this.GodMode}
                             ghost>
                             View Entire History
-                        </Button>                        
+                        </Button>
                         {/* <Button style={{ float: "right", marginTop: 50 }} type="dashed" onClick={this.testMove}>
                             Test Move
-                        </Button> */}                         
+                        </Button> */}
                     </Col>
                 </Row>
 
@@ -674,10 +681,10 @@ export default class GameBoard extends Component {
                     centered
                     footer={[
                         <div key="buttons" >
-                            <Row gutter={24} >                                
+                            <Row gutter={24} >
                                 <Col span={6} offset={2}>
                                     <Button type="primary" onClick={this.closeResultWindow} block>Continue</Button>
-                                </Col> 
+                                </Col>
                                 <Col span={6} offset={1}>
                                     <Button onClick={this.resetGame} block>Play another game</Button>
                                 </Col>
@@ -695,11 +702,11 @@ export default class GameBoard extends Component {
                     title="God Mode"
                     visible={godModeVisible}
                     width={1200}
-                    bodyStyle={{backgroundImage: `url(${historyBk})`, backgroundRepeat: 'no-repeat', backgroundSize: 'cover', minHeight: "90%"}}
+                    bodyStyle={{ backgroundImage: `url(${historyBk})`, backgroundRepeat: 'no-repeat', backgroundSize: 'cover', minHeight: "90%" }}
                     onCancel={this.closeGodMode}
                     footer={null}
                     destroyOnClose={true}
-                    centered                    
+                    centered
                 >
                     <GodMode gameInfo={this.state} updateGame={this.cheatGame} />
                 </Modal>

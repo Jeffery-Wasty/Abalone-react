@@ -1,11 +1,11 @@
-import React, { Component } from 'react';
 import { Button, Modal } from 'antd';
+import React, { Component } from 'react';
 import GameBoard from './components/GameBoard';
 import Settings from './components/Settings';
-import BackgroundPic from './image/bk_main1.jpg';
+import './css/App.css';
 import gamePic from './image/bk.jpg';
 import gamePic1 from './image/bk1.jpg';
-import './css/App.css';
+import BackgroundPic from './image/bk_main1.jpg';
 class App extends Component {
 
   state = {
